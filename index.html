@@ -37,13 +37,14 @@
         
         /* Spinner used for active form submissions */
         .spinner {
-            border: 3px solid rgba(255,255,255,0.3);
+            border: 3px solid rgba(0, 0, 0, 0.1);
             border-radius: 50%;
-            border-top: 3px solid #fff;
+            border-top: 3px solid currentColor;
             width: 20px;
             height: 20px;
             animation: spin 0.8s linear infinite;
             display: inline-block;
+            vertical-align: middle;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -90,8 +91,7 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            <!-- LEFT CONTROL PANEL: STATS, RECALLS & SAVED DRAFTS (STICKY PANEL) -->
-            <!-- Use order-2 to push sidebar below form content on mobile screens, and reset on large viewports -->
+            <!-- LEFT CONTROL PANEL: STATS, RECALLS & SAVED DRAFTS -->
             <aside class="lg:col-span-4 space-y-6 lg:sticky lg:top-24 order-2 lg:order-1">
                 
                 <!-- LIVE STATS SUMMARY -->
@@ -145,26 +145,25 @@
                     <div class="bg-slate-100 px-5 py-3.5 border-b border-slate-200 flex justify-between items-center">
                         <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
                             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l2.414-2.414a1 1 0 01.707-.293H20"></path></svg>
-                            Saved Drafts Workspace
+                            Lobby Cloud Workspace
                         </h2>
                         <span id="draftCountBadge" class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full">0</span>
                     </div>
                     <div class="p-5 space-y-4">
-                        <p class="text-xs text-slate-500 leading-relaxed">Save your form progress dynamically to prevent data loss. You can load a draft instantly to continue work, and it will be auto-deleted upon successful report submission.</p>
+                        <p class="text-xs text-slate-500 leading-relaxed">Save drafts directly to Google Sheets. You can retrieve them instantly across all terminal PCs connected to this lobby.</p>
                         
                         <div class="flex gap-2">
-                            <button type="button" onclick="triggerSaveDraftFlow()" class="flex-1 py-2.5 px-3 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-lg hover:bg-indigo-100 border border-indigo-200 transition-colors flex items-center justify-center gap-1.5">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
-                                Save Current Progress
+                            <button type="button" onclick="triggerSaveDraftFlow()" class="flex-1 py-2.5 px-3 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-lg hover:bg-indigo-100 border border-indigo-200 transition-all flex items-center justify-center gap-1.5 shadow-sm active:translate-y-0.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                                Save/Update Cloud Draft
                             </button>
                         </div>
 
                         <!-- Available draft lists -->
                         <div class="border-t border-slate-100 pt-3">
-                            <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Saved Versions (Click to Load)</h4>
+                            <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Cloud Versions for selected Lobby</h4>
                             <div id="draftsListContainer" class="space-y-2 max-h-[190px] overflow-y-auto pr-1">
-                                <!-- Drafts dynamically go here -->
-                                <p class="text-xs text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-lg">No saved drafts found.</p>
+                                <p class="text-xs text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-lg">Please select a Lobby to sync drafts.</p>
                             </div>
                         </div>
                     </div>
@@ -223,18 +222,17 @@
             </aside>
 
             <!-- RIGHT SECTION: PRODUCTION DATA SHEETS -->
-            <!-- Use order-1 to place form inputs on top on mobile, ensuring quick entry -->
             <div class="lg:col-span-8 order-1 lg:order-2">
                 
                 <!-- ACTIVE DRAFT BANNER -->
-                <div id="activeDraftBanner" class="hidden bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center justify-between mb-6 shadow-sm">
+                <div id="activeDraftBanner" class="hidden bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center justify-between mb-6 shadow-sm animate-pulse">
                     <div class="flex items-center gap-3">
                         <div class="bg-blue-600 text-white p-2 rounded-lg">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         </div>
                         <div>
                             <p class="text-sm font-bold text-slate-800">Draft Mode Active</p>
-                            <p class="text-xs text-slate-500">Working on draft: <span id="activeDraftName" class="font-semibold text-blue-700">None</span>. (This draft will be auto-deleted upon successful submission)</p>
+                            <p class="text-xs text-slate-500">Working on Cloud Draft: <span id="activeDraftName" class="font-bold text-blue-700">None</span>. (This draft will auto-delete upon submission)</p>
                         </div>
                     </div>
                     <button type="button" onclick="unloadActiveDraft()" class="text-xs bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg transition-colors">
@@ -245,7 +243,7 @@
                 <!-- OVERWRITE MODE WARNING BANNER -->
                 <div id="overwriteModeBanner" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center justify-between mb-6 shadow-sm">
                     <div class="flex items-center gap-3">
-                        <div class="bg-amber-505 text-amber-600 p-2 bg-amber-100 rounded-lg">
+                        <div class="text-amber-600 p-2 bg-amber-100 rounded-lg">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         </div>
                         <div>
@@ -259,8 +257,9 @@
                 </div>
 
                 <form id="operationsForm" name="google-sheet" class="space-y-8">
-                    <!-- Hidden rowNumber element to guide Apps Script overwriting -->
+                    <!-- Hidden fields to guide Apps Script overwriting and atomic draft deletions -->
                     <input type="hidden" name="rowNumber" id="rowNumber" value="">
+                    <input type="hidden" name="draftId" id="activeDraftIdField" value="">
                     
                     <!-- BASELINE GENERAL CONTROL INFO -->
                     <section id="gen-info-sec" class="scroll-mt-24 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-shadow">
@@ -278,7 +277,7 @@
                             </div>
                             <div class="relative">
                                 <label for="lobbySelect" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select Lobby</label>
-                                <select id="lobbySelect" name="Lobby" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white outline-none text-slate-700 appearance-none cursor-pointer font-medium">
+                                <select id="lobbySelect" name="Lobby" required onchange="loadLobbyDrafts()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white outline-none text-slate-700 appearance-none cursor-pointer font-medium">
                                     <option value="" disabled selected>-- Choose Lobby --</option>
                                     <option value="AKT">AKT</option>
                                     <option value="BJRI">BJRI</option>
@@ -406,7 +405,7 @@
                     <section id="resources-sec" class="scroll-mt-24 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-shadow">
                         <div class="bg-teal-800 px-6 py-4 border-b border-teal-900 flex items-center justify-between flex-wrap gap-2">
                             <h2 class="text-sm font-extrabold text-white tracking-wider flex items-center gap-2">
-                                <svg class="w-5 h-5 text-teal-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                <svg class="w-5 h-5 text-teal-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                                 3. CREW & RESOURCES UTILIZATION
                             </h2>
                             <button type="button" onclick="zeroFillSection('resources-sec')" class="text-xs bg-teal-700/60 hover:bg-teal-700 text-teal-200 border border-teal-650/60 px-2.5 py-1 rounded-lg transition-colors font-medium">Reset Section to 0</button>
@@ -676,12 +675,14 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwZHKi2KHcPayNj9hWquqmBnxoY6BzCyYdU6LJK7MD8RMqKUENpnHtNnERKXW6bJA6i/exec';
+        // Set this to your published Google Apps Script Web App URL
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwqD7VylJukzt9Jo4SPe67RRTbf8oVdgyXrvF_8sQLFbTPVrEEOzeLHRM54-TDeTWw/exec';
 
         // Core variables and state management
         const form = document.getElementById('operationsForm');
         const submitBtn = document.getElementById('submitBtn');
-        let activeDraftId = null; // Track loaded draft version
+        let activeDraftId = null; // Currently selected cloud draft ID
+        let currentDrafts = [];   // Real-time drafts populated from the Google Sheet backend
 
         document.addEventListener('DOMContentLoaded', () => {
             // Setup Default Date to Today
@@ -715,16 +716,13 @@
             calculateLiveBalancingPT();
             calculateLiveRROccupancy();
 
-            // Load saved drafts configuration list
-            renderDraftList();
-
             // Initialize Recall Last Submission widget
             renderRecallWidget();
 
-            // Autosave system loop (occurs every 10 seconds)
+            // Autosave system loop (occurs locally every 10 seconds to protect crashes)
             setInterval(triggerAutosave, 10000);
             
-            // Restore last unsaved auto-saved backup if exists
+            // Restore last unsaved auto-saved backup if exists on startup
             loadAutosavedSessionOnStart();
         });
 
@@ -829,7 +827,7 @@
             const data = {};
             const elements = form.querySelectorAll('input, select');
             elements.forEach(el => {
-                if (el.name && el.name !== 'rowNumber') {
+                if (el.name && el.name !== 'rowNumber' && el.name !== 'draftId') {
                     data[el.name] = el.value;
                 }
             });
@@ -853,49 +851,128 @@
             });
         }
 
-        // Prompt draft name choice
+        // Fetch Cloud Drafts Lobby-Wise on Dropdown Change
+        function loadLobbyDrafts() {
+            const lobby = document.getElementById('lobbySelect').value;
+            if (!lobby) return;
+
+            // If an active draft from a different lobby is loaded, unload it to prevent crossover
+            if (activeDraftId) {
+                const matched = currentDrafts.find(d => d.id === activeDraftId);
+                if (matched && matched.lobby !== lobby) {
+                    activeDraftId = null;
+                    document.getElementById('activeDraftIdField').value = '';
+                    updateDraftBanner();
+                }
+            }
+
+            const container = document.getElementById('draftsListContainer');
+            container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-lg"><span class="spinner mr-2 text-blue-600"></span>Syncing Lobby Workspace...</p>`;
+
+            fetch(scriptURL, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: 'getDrafts',
+                    Lobby: lobby
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                currentDrafts = data;
+                renderDraftList();
+            })
+            .catch(err => {
+                console.error(err);
+                container.innerHTML = `<p class="text-xs text-rose-500 italic text-center py-4 bg-rose-50 rounded-lg">Sync failed. Verify Script URL.</p>`;
+            });
+        }
+
+        // Save or update current form state as draft
         function triggerSaveDraftFlow() {
-            const lobby = document.getElementById('lobbySelect').value || 'Unspecified';
-            const dateStr = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            const lobby = document.getElementById('lobbySelect').value;
+            if (!lobby) {
+                showToast("Please select a Lobby first before saving a draft.", false);
+                return;
+            }
             
-            document.getElementById('draftNameInput').value = `${lobby} Shift (${dateStr})`;
+            const timeStr = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            let suggestedName = `${lobby} Shift (${timeStr})`;
+            
+            // Prepopulate with currently active draft name if we are editing
+            if (activeDraftId) {
+                const matched = currentDrafts.find(d => d.id === activeDraftId);
+                if (matched) {
+                    suggestedName = matched.name;
+                }
+            }
+
+            document.getElementById('draftNameInput').value = suggestedName;
             showModal('draftNameModal');
         }
 
         function confirmSaveDraft() {
-            const draftName = document.getElementById('draftNameInput').value.trim() || 'Quick Version';
-            const drafts = JSON.parse(localStorage.getItem('railway_lobby_drafts') || '[]');
+            const draftName = document.getElementById('draftNameInput').value.trim() || 'Quick Draft';
+            const formData = getFormState();
             
-            const newDraft = {
-                id: 'draft_' + Date.now(),
-                name: draftName,
-                timestamp: new Date().toLocaleString(),
-                data: getFormState()
-            };
+            // CRITICAL: Reuse draft ID if in draft mode so PC2 updates PC1's row rather than duplicating it!
+            const draftId = activeDraftId || 'draft_' + Date.now();
 
-            drafts.push(newDraft);
-            localStorage.setItem('railway_lobby_drafts', JSON.stringify(drafts));
-            
-            closeModal('draftNameModal');
-            renderDraftList();
-            showToast(`Draft "${draftName}" saved successfully!`);
+            const saveBtn = document.querySelector('#draftNameModal button:last-child');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner mr-1.5"></span> Saving...';
+
+            fetch(scriptURL, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: 'saveDraft',
+                    draftId: draftId,
+                    draftName: draftName,
+                    Lobby: formData.Lobby || '',
+                    jsonData: JSON.stringify(formData)
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Save Draft';
+
+                if (data.result === 'success') {
+                    closeModal('draftNameModal');
+                    showToast(`✓ Draft "${draftName}" saved to cloud successfully`);
+                    
+                    // Put form into active draft state
+                    activeDraftId = draftId;
+                    document.getElementById('activeDraftIdField').value = draftId;
+                    updateDraftBanner(draftName);
+                    
+                    loadLobbyDrafts(); // Refresh workspace
+                } else {
+                    showToast('Draft save failed.', false);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Save Draft';
+                showToast('Draft save failed.', false);
+            });
         }
 
-        // Dynamic Draft List Renderer with standard sizing icons
+        // Dynamic Draft List Renderer (Reflects Cloud Synced currentDrafts)
         function renderDraftList() {
-            const draftsListContainer = document.getElementById('draftsListContainer');
-            const badgeCount = document.getElementById('draftCountBadge');
-            const drafts = JSON.parse(localStorage.getItem('railway_lobby_drafts') || '[]');
+            const container = document.getElementById('draftsListContainer');
+            const badge = document.getElementById('draftCountBadge');
 
-            badgeCount.innerText = drafts.length;
+            badge.innerText = currentDrafts.length;
 
-            if (drafts.length === 0) {
-                draftsListContainer.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-lg">No saved drafts found.</p>`;
+            if (currentDrafts.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-lg">No active cloud drafts for this lobby.</p>`;
                 return;
             }
 
-            draftsListContainer.innerHTML = '';
-            drafts.slice().reverse().forEach(draft => {
+            container.innerHTML = '';
+            // Render reverse chronologically (latest draft on top)
+            currentDrafts.slice().reverse().forEach(draft => {
                 const isActive = draft.id === activeDraftId;
                 const item = document.createElement('div');
                 
@@ -905,9 +982,9 @@
                     <div class="min-w-0 flex-1" onclick="loadDraftVersion('${draft.id}')">
                         <div class="flex items-center gap-1.5">
                             <span class="text-xs font-bold text-slate-700 block truncate" title="${draft.name}">${draft.name}</span>
-                            ${isActive ? '<span class="text-[9px] bg-blue-600 text-white font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">Active</span>' : ''}
+                            ${isActive ? '<span class="text-[9px] bg-blue-600 text-white font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">Loaded</span>' : ''}
                         </div>
-                        <span class="text-[10px] text-slate-400 block font-mono mt-0.5">${draft.timestamp}</span>
+                        <span class="text-[10px] text-slate-400 block font-mono mt-0.5">${draft.time}</span>
                     </div>
                     <div class="flex items-center gap-1 shrink-0">
                         <button type="button" onclick="deleteDraftVersion('${draft.id}', event)" class="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Delete Draft">
@@ -915,50 +992,81 @@
                         </button>
                     </div>
                 `;
-                draftsListContainer.appendChild(item);
+                container.appendChild(item);
             });
         }
 
-        // Loads draft, flags activeDraftId, and triggers banner notification
+        // Apply selected cloud version to local form inputs
         function loadDraftVersion(id) {
-            const drafts = JSON.parse(localStorage.getItem('railway_lobby_drafts') || '[]');
-            const matched = drafts.find(d => d.id === id);
-            if (matched) {
-                loadFormState(matched.data);
-                activeDraftId = id; // Flag active loaded draft
-                renderDraftList(); // Re-render sidebar to highlight
-                updateDraftBanner(matched.name);
-                showToast(`Restored draft: ${matched.name}`);
+            const matched = currentDrafts.find(d => d.id === id);
+            if (!matched) {
+                showToast("Draft not found", false);
+                return;
             }
+
+            const formData = JSON.parse(matched.jsonData);
+            loadFormState(formData);
+
+            activeDraftId = id;
+            document.getElementById('activeDraftIdField').value = id;
+            updateDraftBanner(matched.name);
+
+            showToast(`Draft "${matched.name}" successfully loaded to form`);
+            renderDraftList();
         }
 
+        // Deletes draft row from the Google Sheet
         function deleteDraftVersion(id, event) {
             if (event) event.stopPropagation(); // Avoid triggering card load function
-            let drafts = JSON.parse(localStorage.getItem('railway_lobby_drafts') || '[]');
-            drafts = drafts.filter(d => d.id !== id);
-            localStorage.setItem('railway_lobby_drafts', JSON.stringify(drafts));
             
-            // If the deleted draft was active, unload it
-            if (activeDraftId === id) {
-                activeDraftId = null;
-                updateDraftBanner();
+            const lobby = document.getElementById('lobbySelect').value;
+            if (!lobby) return;
+
+            if (!confirm("Are you sure you want to delete this draft from the cloud?")) {
+                return;
             }
-            
-            renderDraftList();
-            showToast('Draft deleted from storage.', false);
+
+            fetch(scriptURL, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: 'deleteDraft',
+                    draftId: id
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === 'success') {
+                    showToast('Draft deleted from cloud.');
+                    
+                    // If the deleted draft was currently being edited, clear draft status
+                    if (activeDraftId === id) {
+                        activeDraftId = null;
+                        document.getElementById('activeDraftIdField').value = '';
+                        updateDraftBanner();
+                    }
+                    loadLobbyDrafts(); // Fetch refreshed list
+                } else {
+                    showToast('Failed to delete draft from cloud.', false);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Error connecting to delete draft.', false);
+            });
         }
 
-        // Unloads the active draft back to clean console state
+        // Unloads the active draft back to clean state
         function unloadActiveDraft() {
             activeDraftId = null;
+            document.getElementById('activeDraftIdField').value = '';
             form.reset();
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('reportDate').value = today;
             calculateLiveTrainOrders();
             calculateLiveBalancingPT();
             calculateLiveRROccupancy();
-            renderDraftList();
             updateDraftBanner();
+            renderDraftList();
             clearRowNumber();
             showToast("Exited draft mode. Form reset completed.", false);
         }
@@ -980,22 +1088,19 @@
             const state = getFormState();
             localStorage.setItem('railway_lobby_autosave_state', JSON.stringify(state));
             
-            const pulse = document.getElementById('autosavePulse');
             const text = document.getElementById('autosaveStatus');
             const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-            
             text.innerText = `Autosaved: ${timestamp}`;
-            pulse.classList.add('scale-150', 'opacity-100');
-            setTimeout(() => {
-                pulse.classList.remove('scale-150', 'opacity-100');
-            }, 1000);
         }
 
         function loadAutosavedSessionOnStart() {
             const savedState = localStorage.getItem('railway_lobby_autosave_state');
             if (savedState) {
-                loadFormState(JSON.parse(savedState));
-                showToast("Your last unsaved form progress was automatically recovered!", true);
+                const currentLobby = document.getElementById('lobbySelect').value;
+                if (!currentLobby) { // Restores if user has not yet interacted with select
+                    loadFormState(JSON.parse(savedState));
+                    showToast("Your last unsaved form progress was recovered locally!", true);
+                }
             }
         }
 
@@ -1033,7 +1138,6 @@
                         <span>Associated Sheet Target:</span>
                         <strong class="text-amber-700 font-bold font-mono text-xs">${targetRowStr}</strong>
                     </div>
-                    
                     <div class="grid grid-cols-1 gap-2">
                         <button type="button" onclick="recallLastSubmission()" class="py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18"></path></svg>
@@ -1061,9 +1165,8 @@
                 showToast("Last submitted report re-loaded! Edit and submit to overwrite.");
             }
         }
-        // ============================================
-        // FIELD VALIDATION LOGIC
-        // ============================================
+
+        // Field distribution syntax & sum mathematical validations
         function validateDetails(detailInputName, totalInputName, fieldLabel) {
             const detailInput = document.querySelector(`input[name="${detailInputName}"]`);
             const totalInput = document.querySelector(`input[name="${totalInputName}"]`);
@@ -1149,7 +1252,7 @@
 
             // Submit visual loading controls
             const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<span class="spinner"></span> Transmitting data...';
+            submitBtn.innerHTML = '<span class="spinner mr-2"></span> Transmitting data...';
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-80', 'cursor-not-allowed');
 
@@ -1161,7 +1264,6 @@
                     throw new Error("Network response was not ok");
                 })
                 .then(responseData => {
-                    // Get saved target row ID from backend if provided
                     const targetRow = responseData.row || null;
                     
                     // SAVE STATE TO RECALL MEMORY ON SUCCESS
@@ -1180,20 +1282,17 @@
                     showModal('successModal');
                     form.reset();
                     clearRowNumber();
-                    activeDraftId = null;
                     
-                    // Clean autosave state on successful upload
+                    // Clean local backup on successful upload
                     localStorage.removeItem('railway_lobby_autosave_state');
                     
-                    // If submission is successful, delete the active draft automatically
-                    if (activeDraftId) {
-                        let drafts = JSON.parse(localStorage.getItem('railway_lobby_drafts') || '[]');
-                        drafts = drafts.filter(d => d.id !== activeDraftId);
-                        localStorage.setItem('railway_lobby_drafts', JSON.stringify(drafts));
-                        activeDraftId = null; // Reset draft state tracking variables
-                        updateDraftBanner(); // Hide Draft Mode active banner
-                        renderDraftList(); // Re-render the active sidebar checklist
-                    }
+                    // UNLOAD ACTIVE DRAFT & REMOVE BANNER
+                    activeDraftId = null;
+                    document.getElementById('activeDraftIdField').value = '';
+                    updateDraftBanner();
+                    
+                    // Refresh current lobby drafts (will be cleared because Google Script auto-deleted it!)
+                    loadLobbyDrafts();
                     
                     document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
                     calculateLiveTrainOrders();
