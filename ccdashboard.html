@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobby Daily Operations Command Center Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            900: '#1e3a8a',
+                            950: '#0f172a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts (Inter & JetBrains Mono) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome v6 for stunning executive icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .mono-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        .glow-blue { box-shadow: 0 0 15px rgba(59, 130, 246, 0.15); }
+        .glow-red { box-shadow: 0 0 15px rgba(239, 68, 68, 0.15); }
+    </style>
+</head>
+<body class="h-full text-slate-100 flex flex-col antialiased">
+
+    <!-- NAVIGATION HEADER -->
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Brand & Status -->
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl text-white shadow-lg shadow-blue-500/10">
+                    <i class="fa-solid fa-train-subway text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                        LOBBY OPERATIONS <span class="bg-blue-500/10 text-blue-400 text-xs font-semibold px-2 py-0.5 rounded-full border border-blue-500/20">COMMAND CENTER</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Daily Operations & Crew Position Analytics (Form to Sheets Data Integration)</p>
+                </div>
+            </div>
+
+           <!-- Configuration & Connection Panel Quick Controls -->
+            <div class="flex items-center flex-wrap gap-3">
+                <!-- Active Refresh Indicator Only -->
+                <button onclick="refreshData()" class="p-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all flex items-center justify-center shadow-lg shadow-blue-500/20" title="Sync Data">
+                    <i id="syncIcon" class="fa-solid fa-rotate text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN BODY CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- CONTROL PANEL / FILTERS -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <!-- Filter Left: Lobbies -->
+            <div class="flex items-center gap-3 flex-wrap">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <i class="fa-solid fa-filter text-blue-500"></i> Active Lobby:
+                </span>
+                <select id="filterLobby" onchange="handleFiltersChange()" class="bg-slate-950 border border-slate-800 text-slate-200 text-xs font-semibold rounded-xl px-3 py-2 outline-none focus:border-blue-500 cursor-pointer">
+                    <option value="ALL">-- All Lobbies Combined --</option>
+                    <option value="AKT">AKT (Akoltara)</option>
+                    <option value="BJRI">BJRI (Bijuri)</option>
+                    <option value="BRJN">BRJN (Brajrajnagar)</option>
+                    <option value="BSP">BSP (Bilaspur)</option>
+                    <option value="KHS">KHS (Kharsia)</option>
+                    <option value="KRBA">KRBA (Korba)</option>
+                    <option value="PND">PND (Pendra Road)</option>
+                    <option value="RIG">RIG (Raigarh)</option>
+                    <option value="SDL">SDL (Shahdol)</option>
+                    <option value="SJQ">SJQ (Surajpur)</option>
+                    <option value="USL">USL (Uslapur)</option>
+                </select>
+            </div>
+
+            <!-- Filter Middle: Date Presets -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <i class="fa-solid fa-calendar-days text-blue-500"></i> Date Range:
+                </span>
+                <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center">
+                    <button onclick="setDateRangePreset(1)" id="preset-1" class="px-2.5 py-1 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-white">Today</button>
+                    <button onclick="setDateRangePreset(7)" id="preset-7" class="px-2.5 py-1 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-white">Last 7 Days</button>
+                    <button onclick="setDateRangePreset(14)" id="preset-14" class="px-2.5 py-1 rounded-lg text-xs font-medium transition-all text-slate-200 bg-slate-800 shadow">Last 14 Days</button>
+                </div>
+            </div>
+
+            <!-- Custom Dates Input -->
+            <div class="flex items-center gap-2">
+                <input type="date" id="filterStartDate" onchange="handleFiltersChange()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300 outline-none focus:border-blue-500">
+                <span class="text-xs text-slate-500">to</span>
+                <input type="date" id="filterEndDate" onchange="handleFiltersChange()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300 outline-none focus:border-blue-500">
+            </div>
+        </section>
+        <!-- DEFALUTER LOBBIES TOP NOTIFICATION PANEL -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 glow-red">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="fa-solid fa-building-circle-xmark text-red-500 text-sm"></i> Missing Submissions (For Selected Date)
+                </h3>
+                <span id="txtDefaulterCount" class="bg-red-500/10 text-red-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-red-500/20">
+                    0 Lobbies Missing
+                </span>
+            </div>
+            <div id="defaulterLobbiesContainer" class="flex flex-wrap gap-2 pt-1">
+                <!-- Missing lobbies automatically injected here -->
+            </div>
+        </div>
+
+        <!-- KPI SUMMARY GRID -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            
+            <!-- KPI 1: Train Orderings (Elec + Diesel) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between glow-blue relative overflow-hidden">
+                <div class="absolute right-0 top-0 h-16 w-16 bg-blue-500/5 rounded-bl-full flex items-center justify-center">
+                    <i class="fa-solid fa-train text-blue-500/20 text-2xl"></i>
+                </div>
+                <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Total Train Orders</span>
+                    <h2 id="kpiTrainOrders" class="text-3xl font-extrabold text-white mt-1">0</h2>
+                </div>
+                <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-800 text-[10px] text-slate-400">
+                    <span class="text-blue-400"><i class="fa-solid fa-bolt"></i> Elec: <b id="subKpiElecTo">0</b></span>
+                    <span class="text-amber-400"><i class="fa-solid fa-gas-pump"></i> Diesel: <b id="subKpiDieselTo">0</b></span>
+                </div>
+            </div>
+
+            <!-- KPI 2: Running Room Status -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between glow-blue relative overflow-hidden">
+                <div class="absolute right-0 top-0 h-16 w-16 bg-teal-500/5 rounded-bl-full flex items-center justify-center">
+                    <i class="fa-solid fa-bed text-teal-500/20 text-2xl"></i>
+                </div>
+                <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Running Room Occupancy</span>
+                    <h2 id="kpiRrOccupancy" class="text-3xl font-extrabold text-teal-400 mt-1">0%</h2>
+                </div>
+                <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-800 text-[10px] text-slate-400">
+                    <span>Beds Occ: <b id="subKpiBedsOcc">0</b></span>
+                    <span>Total Beds: <b id="subKpiBedsTotal">0</b></span>
+                </div>
+            </div>
+
+            <!-- KPI 3: Jeep Fleet Health -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between glow-blue relative overflow-hidden">
+                <div class="absolute right-0 top-0 h-16 w-16 bg-emerald-500/5 rounded-bl-full flex items-center justify-center">
+                    <i class="fa-solid fa-car text-emerald-500/20 text-2xl"></i>
+                </div>
+                <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Jeep Serviceability</span>
+                    <h2 id="kpiJeepStatus" class="text-3xl font-extrabold text-emerald-400 mt-1">100%</h2>
+                </div>
+                <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-800 text-[10px] text-slate-400">
+                    <span id="subKpiJeepBreakdown" class="text-emerald-400"><i class="fa-solid fa-circle-check"></i> No Breakdowns</span>
+                    <span>Active: <b id="subKpiJeepsActive">0</b></span>
+                </div>
+            </div>
+
+            <!-- KPI 4: Lobby Average PDD -->
+             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between glow-blue relative overflow-hidden">
+                <div class="absolute right-0 top-0 h-16 w-16 bg-orange-500/5 rounded-bl-full flex items-center justify-center">
+                    <i class="fa-solid fa-clock text-orange-500/20 text-2xl"></i>
+                </div>
+                <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Avg PDD Analytics</span>
+                    <div class="flex items-center justify-between gap-2 mt-1.5">
+                        <div>
+                            <span class="text-[8px] text-slate-500 uppercase block font-semibold">UP Avg</span>
+                            <h2 id="kpiAvgPddUp" class="text-base font-extrabold text-orange-400 font-mono">00:00</h2>
+                        </div>
+                        <div class="border-l border-slate-800 h-6"></div>
+                        <div>
+                            <span class="text-[8px] text-slate-500 uppercase block font-semibold">DN Avg</span>
+                            <h2 id="kpiAvgPddDn" class="text-base font-extrabold text-orange-400 font-mono">00:00</h2>
+                        </div>
+                        <div class="border-l border-slate-800 h-6"></div>
+                        <div class="bg-slate-950/40 px-2 py-0.5 rounded-lg border border-slate-800/60">
+                            <span class="text-[8px] text-blue-400 uppercase block font-bold">Overall</span>
+                            <h2 id="kpiAvgPddOverall" class="text-base font-extrabold text-blue-400 font-mono">00:00</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-800 text-[10px] text-slate-400">
+                    <span class="text-red-400"><i class="fa-solid fa-triangle-exclamation"></i> Delays >2h (U/D): 
+                        <b id="subKpiHighDelaysUp">0</b> / <b id="subKpiHighDelaysDn">0</b>
+                    </span>
+                </div>
+            </div>
+
+            <!-- KPI 5: Critical Safety Alerts -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between glow-red relative overflow-hidden">
+                <div class="absolute right-0 top-0 h-16 w-16 bg-red-500/5 rounded-bl-full flex items-center justify-center">
+                    <i class="fa-solid fa-shield-halved text-red-500/20 text-2xl"></i>
+                </div>
+                <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Compliance Overdues</span>
+                    <h2 id="kpiOverdues" class="text-3xl font-extrabold text-red-500 mt-1">0</h2>
+                </div>
+                <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-800 text-[10px] text-slate-400">
+                    <span class="text-red-300">PME: <b id="subKpiPmeOverdue">0</b></span>
+                    <span class="text-orange-300">CRC: <b id="subKpiCrcOverdue">0</b></span>
+                    <span class="text-yellow-300">Auto: <b id="subKpiAutoOverdue">0</b></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRIMARY CHARTS LAYOUT -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Chart 1: Train Ordering Movements Trend (Line Chart) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 lg:col-span-2 flex flex-col justify-between space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-blue-500"></i> Daily Train Orderings & FOIS Generation
+                        </h3>
+                        <p class="text-xs text-slate-400">Comparing Electric vs Diesel and FOIS orders over time</p>
+                    </div>
+                    <span class="text-[10px] text-slate-500 flex items-center gap-1"><i class="fa-solid fa-circle text-blue-500"></i> Updated dynamically</span>
+                </div>
+                <div class="h-64 w-full relative">
+                    <canvas id="chartTrainMovements"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 2: Lobby-Wise Activity Distribution & Share (Doughnut) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4">
+                <div>
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-teal-400"></i> Lobby Performance Share
+                    </h3>
+                    <p class="text-xs text-slate-400">Contribution ratio based on total operational entries</p>
+                </div>
+                <div class="h-56 w-full relative flex items-center justify-center">
+                    <canvas id="chartLobbyDistribution"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPANDED DETAILED OPERATIONAL TABS -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            
+            <!-- Tabs Menu -->
+            <div class="bg-slate-950 border-b border-slate-800 p-2 flex flex-wrap gap-2">
+                <button onclick="switchSubTab('toPart')" id="tab-toPart" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all bg-blue-600 text-white shadow">
+                    <i class="fa-solid fa-route"></i> 1. Train Ordering Particulars
+                </button>
+                <button onclick="switchSubTab('ptBalancing')" id="tab-ptBalancing" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-scale-balanced"></i> 2. PT / Balancing Logistics
+                </button>
+                <button onclick="switchSubTab('crewRR')" id="tab-crewRR" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-bed"></i> 3. Crew & Running Room
+                </button>
+                <button onclick="switchSubTab('performanceSafety')" id="tab-performanceSafety" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-user-shield"></i> 4. Performance & Safety Alerts
+                </button>
+                <button onclick="switchSubTab('counselling')" id="tab-counselling" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-people-group"></i> 5. Counselling & Initiatives
+                </button>
+            </div>
+
+            <!-- Tab Content Area -->
+            <div class="p-6">
+                
+                <!-- TAB 1: TRAIN ORDERING PARTICULARS -->
+                <div id="subtab-toPart" class="subtab-panel grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">Directional Run Ratio</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span>UP Directions Runs</span>
+                                    <span id="txtUpRuns" class="font-bold text-blue-400">0</span>
+                                </div>
+                                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                                    <div id="barUpRuns" class="bg-blue-500 h-full rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span>DN Directions Runs</span>
+                                    <span id="txtDnRuns" class="font-bold text-purple-400">0</span>
+                                </div>
+                                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                                    <div id="barDnRuns" class="bg-purple-500 h-full rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">RTO / Putback Cases</h4>
+                        <div class="flex items-center justify-around h-24">
+                            <div class="text-center">
+                                <span class="text-[10px] text-slate-400 block uppercase font-bold">RTO UP</span>
+                                <span id="txtRtoUp" class="text-2xl font-bold text-yellow-500">0</span>
+                            </div>
+                            <div class="h-10 w-[1px] bg-slate-800"></div>
+                            <div class="text-center">
+                                <span class="text-[10px] text-slate-400 block uppercase font-bold">RTO DN</span>
+                                <span id="txtRtoDn" class="text-2xl font-bold text-yellow-500">0</span>
+                            </div>
+                            <div class="h-10 w-[1px] bg-slate-800"></div>
+                            <div class="text-center">
+                                <span class="text-[10px] text-slate-400 block uppercase font-bold">TKE UP/DN</span>
+                                <span id="txtTotalTke" class="text-2xl font-bold text-red-400">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">RHQ Orders Distribution</h4>
+                        <div class="space-y-2 max-h-[110px] overflow-y-auto pr-1">
+                            <div class="flex justify-between text-xs bg-slate-900/50 p-2 rounded-lg border border-slate-800/50">
+                                <span>Total RHQ Orders</span>
+                                <span id="txtTotalRhq" class="font-bold text-blue-400">0</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400">
+                                <strong>Log / Distribution:</strong>
+                                <p id="txtRhqDetails" class="italic text-slate-300 mt-1">No Distribution recorded in criteria.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: PT / BALANCING LOGISTICS -->
+                <div id="subtab-ptBalancing" class="subtab-panel hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">
+                            <i class="fa-solid fa-arrow-right-arrow-left text-indigo-400 mr-1"></i> Section PT / Balancing Status
+                        </h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800/85 text-center">
+                                <span class="text-[10px] text-slate-400 uppercase block">Total Balancing (UP)</span>
+                                <span id="txtPtBalancingUp" class="text-xl font-bold text-indigo-400">0</span>
+                            </div>
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800/85 text-center">
+                                <span class="text-[10px] text-slate-400 uppercase block">Total Balancing (DN)</span>
+                                <span id="txtPtBalancingDn" class="text-xl font-bold text-indigo-400">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">
+                            <i class="fa-solid fa-truck-moving text-indigo-400 mr-1"></i> PT Logistics by Mode
+                        </h4>
+                        <div class="grid grid-cols-2 gap-4 text-xs">
+                            <div class="space-y-2">
+                                <div class="p-2 bg-indigo-950/20 rounded border border-indigo-900/30">
+                                    Incoming Jeep: <strong id="txtPtInJeep" class="float-right text-indigo-300">0</strong>
+                                </div>
+                                <div class="p-2 bg-indigo-950/20 rounded border border-indigo-900/30">
+                                    Incoming Train: <strong id="txtPtInTrain" class="float-right text-indigo-300">0</strong>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="p-2 bg-indigo-950/20 rounded border border-indigo-900/30">
+                                    Outgoing Jeep: <strong id="txtPtOutJeep" class="float-right text-indigo-300">0</strong>
+                                </div>
+                                <div class="p-2 bg-indigo-950/20 rounded border border-indigo-900/30">
+                                    Outgoing Train: <strong id="txtPtOutTrain" class="float-right text-indigo-300">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: CREW & RUNNING ROOM -->
+                <div id="subtab-crewRR" class="subtab-panel hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">HQ Crew Utilization</h4>
+                        <div class="flex items-center justify-around h-24 text-center">
+                            <div>
+                                <i class="fa-solid fa-bolt text-lg text-blue-400 mb-1"></i>
+                                <span class="text-[10px] text-slate-400 block uppercase font-bold">Electric HQ</span>
+                                <span id="txtCrewHqElec" class="text-xl font-bold text-white">0</span>
+                            </div>
+                            <div class="h-10 w-[1px] bg-slate-800"></div>
+                            <div>
+                                <i class="fa-solid fa-gas-pump text-lg text-amber-500 mb-1"></i>
+                                <span class="text-[10px] text-slate-400 block uppercase font-bold">Diesel HQ</span>
+                                <span id="txtCrewHqDiesel" class="text-xl font-bold text-white">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">Outstation (OS) Crew Util</h4>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between items-center bg-slate-900 p-2 rounded">
+                                <span>Electric OS Utilized:</span>
+                                <strong id="txtCrewOsElec" class="text-teal-400">0</strong>
+                            </div>
+                            <div class="flex justify-between items-center bg-slate-900 p-2 rounded">
+                                <span>Diesel OS Utilized:</span>
+                                <strong id="txtCrewOsDiesel" class="text-teal-400">0</strong>
+                            </div>
+                            <p class="text-[10px] text-slate-400 italic">Details: <span id="txtCrewOsDetails" class="text-slate-300"></span></p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">Food & Rest FSD Taken</h4>
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800/85">
+                                <span class="text-[10px] text-slate-400 uppercase block">FSD Taken</span>
+                                <span id="txtFsdAlp" class="text-xl font-bold text-emerald-400">0</span>
+                            </div>
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800/85">
+                                <span class="text-[10px] text-slate-400 uppercase block">FSD Not Taken</span>
+                                <span id="txtFsdNotAlp" class="text-xl font-bold text-red-400">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: PERFORMANCE & SAFETY ALERTS -->
+                <div id="subtab-performanceSafety" class="subtab-panel hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+                   <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">
+                            <i class="fa-solid fa-gauge-high text-orange-400 mr-1"></i> Directional PDD Breakdown
+                        </h4>
+                       <div class="space-y-2.5 text-xs">
+                            <div class="p-2.5 bg-red-950/20 rounded border border-red-900/30 flex justify-between items-center">
+                                <span class="text-red-400 font-medium"><i class="fa-solid fa-triangle-exclamation text-red-500 mr-1"></i> UP PDD > 2 Hours (Cases):</span>
+                                <strong id="tabHighDelaysUp" class="text-red-400 font-bold font-mono">0</strong>
+                            </div>
+                            <div class="p-2.5 bg-red-950/20 rounded border border-red-900/30 flex justify-between items-center">
+                                <span class="text-red-400 font-medium"><i class="fa-solid fa-triangle-exclamation text-red-500 mr-1"></i> DN PDD > 2 Hours (Cases):</span>
+                                <strong id="tabHighDelaysDn" class="text-red-400 font-bold font-mono">0</strong>
+                            </div>
+                            <div class="p-2.5 bg-orange-950/20 rounded border border-orange-900/30 flex justify-between items-center">
+                                <span class="text-orange-300 font-medium">UP Avg PDD Duration:</span>
+                                <strong id="tabPddAvgUp" class="text-orange-400 font-bold font-mono">00:00</strong>
+                            </div>
+                            <div class="p-2.5 bg-orange-950/20 rounded border border-orange-900/30 flex justify-between items-center">
+                                <span class="text-orange-300 font-medium">DN Avg PDD Duration:</span>
+                                <strong id="tabPddAvgDn" class="text-orange-400 font-bold font-mono">00:00</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">
+                            <i class="fa-solid fa-clock-rotate-left text-orange-400 mr-1"></i> Running Hours Performance
+                        </h4>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between p-2 bg-slate-900 rounded">
+                                <span>SOSO Above 12 Hrs:</span>
+                                <strong id="txtSoso12" class="text-orange-400">0</strong>
+                            </div>
+                            <div class="flex justify-between p-2 bg-slate-900 rounded">
+                                <span>SOSO Above 14 Hrs:</span>
+                                <strong id="txtSoso14" class="text-red-400">0</strong>
+                            </div>
+                            <div class="flex justify-between p-2 bg-slate-900 rounded">
+                                <span>SOWS Above 12 Hrs:</span>
+                                <strong id="txtSows12" class="text-orange-400">0</strong>
+                            </div>
+                            <div class="flex justify-between p-2 bg-slate-900 rounded">
+                                <span>SOWS Above 14 Hrs:</span>
+                                <strong id="txtSows14" class="text-red-400">0</strong>
+                            </div>
+                            <div class="flex justify-between p-2 bg-slate-900 rounded">
+                                <span>Total Number of WOR:</span>
+                                <strong id="txtTotalWor" class="text-yellow-400">0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">
+                            <i class="fa-solid fa-signature text-blue-400 mr-1"></i> Manual CMS SignOn/Offs
+                        </h4>
+                        <div class="space-y-2 text-xs">
+                            <div class="p-2 bg-slate-900 rounded border border-slate-800">
+                                <div class="flex justify-between">
+                                    <span>Manual Sign-On:</span>
+                                    <strong id="txtManualSignOn" class="text-blue-400">0</strong>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-1">Reason: <span id="txtManualSignOnReason" class="text-slate-300">NIL</span></p>
+                            </div>
+                            <div class="p-2 bg-slate-900 rounded border border-slate-800">
+                                <div class="flex justify-between">
+                                    <span>Manual Sign-Off:</span>
+                                    <strong id="txtManualSignOff" class="text-blue-400">0</strong>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-1">Reason: <span id="txtManualSignOffReason" class="text-slate-300">NIL</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: COUNSELLING & INITIATIVES -->
+                <div id="subtab-counselling" class="subtab-panel hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">RS Valve Operations by ALPs</h4>
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                                <span class="text-[10px] text-slate-400 block">RS Valve Ops (Lobby)</span>
+                                <span id="txtRsValveLobby" class="text-2xl font-bold text-rose-400">0</span>
+                            </div>
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                                <span class="text-[10px] text-slate-400 block">RS Valve Ops (Loco/CTO)</span>
+                                <span id="txtRsValveLoco" class="text-2xl font-bold text-rose-400">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">Mass Counselling Campaigns</h4>
+                        <div class="grid grid-cols-3 gap-2 text-xs text-center">
+                            <div class="bg-slate-900 p-2 rounded">
+                                Sessions: <strong id="txtMassSessions" class="block text-slate-200 mt-1 text-sm">0</strong>
+                            </div>
+                            <div class="bg-slate-900 p-2 rounded">
+                                CLIs: <strong id="txtMassClis" class="block text-slate-200 mt-1 text-sm">0</strong>
+                            </div>
+                            <div class="bg-slate-900 p-2 rounded">
+                                LPs: <strong id="txtMassLps" class="block text-slate-200 mt-1 text-sm">0</strong>
+                            </div>
+                            <div class="bg-slate-900 p-2 rounded">
+                                LPSs: <strong id="txtMassLpss" class="block text-slate-200 mt-1 text-sm">0</strong>
+                            </div>
+                            <div class="bg-slate-900 p-2 rounded col-span-2">
+                                ALPs Attended: <strong id="txtMassAlps" class="block text-emerald-400 mt-1 text-sm">0</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- DATA LOGS INTERACTIVE TABLE -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div class="p-5 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list text-blue-500"></i> Daily Submissions Data Log
+                    </h3>
+                    <p class="text-xs text-slate-400">Full catalog displaying all 64 indicators recorded from the system.</p>
+                </div>
+                
+                <div class="flex items-center gap-2 flex-wrap">
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                        <input type="text" id="tableSearch" onkeyup="filterTableSearch()" placeholder="Search reasons, code details..." class="bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-200 outline-none focus:border-blue-500 w-60">
+                    </div>
+
+                    <!-- Export Buttons -->
+                    <button onclick="exportToCSV()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all">
+                        <i class="fa-solid fa-file-excel"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table Wrapper -->
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-950/70 text-slate-400 border-b border-slate-800">
+                            <th class="p-3 font-semibold">Timestamp</th>
+                            <th class="p-3 font-semibold">Date</th>
+                            <th class="p-3 font-semibold">Lobby</th>
+                            <th class="p-3 font-semibold text-center">TO Elec (U/D)</th>
+                            <th class="p-3 font-semibold text-center">TO Diesel (U/D)</th>
+                            <th class="p-3 font-semibold text-center">Total RHQ</th>
+                            <th class="p-3 font-semibold text-center">RR Occupancy</th>
+                            <th class="p-3 font-semibold text-center">Jeep Breakdown</th>
+                            <th class="p-3 font-semibold text-center">Avg PDD (UP/DN)</th>
+                            <th class="p-3 font-semibold text-center">Overdues (PME/CRC/Auto)</th>
+                            <th class="p-3 font-semibold text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsTableBody" class="divide-y divide-slate-800">
+                        <!-- Filled dynamically by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div id="tableEmptyState" class="hidden p-8 text-center text-slate-500 text-xs">
+                <i class="fa-solid fa-folder-open text-3xl block mb-2 text-slate-600"></i>
+                No reports submitted matching the filter criteria.
+            </div>
+
+            <!-- Table Pagination/Status Summary -->
+            <div class="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
+                <div>
+                    Showing <span id="txtTableShowingCount" class="font-semibold text-slate-300">0</span> out of <span id="txtTableTotalCount" class="font-semibold text-slate-300">0</span> records.
+                </div>
+                <div class="italic text-slate-600">
+                    *Double-click on any row to inspect all 64 columns in detail.
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- CREDENTIALS MODAL (GOOGLE SHEET CONFIGURATION) -->
+    <div id="configModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 opacity-0 pointer-events-none hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl shadow-blue-500/5 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-screwdriver-wrench text-blue-500"></i> Google Sheet Connection Setup
+                </h3>
+                <button onclick="toggleConfigModal(false)" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="text-xs text-slate-300 space-y-2 leading-relaxed bg-slate-950 p-4 rounded-xl border border-slate-800/80">
+                <h4 class="font-bold text-blue-400 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-info"></i> How to enable Live Synchronization:
+                </h4>
+                <ol class="list-decimal pl-4 space-y-1 text-[11px] text-slate-400">
+                    <li>Share your spreadsheet as <strong>"Anyone with the link can view"</strong>.</li>
+                    <li>Generate a <strong>Google Sheets API Key</strong> in Google Cloud Console.</li>
+                    <li>Enter the Key below and toggle to <strong>Live Google Sheet</strong> mode.</li>
+                </ol>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Spreadsheet ID -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Spreadsheet ID</label>
+                    <input type="text" id="configSheetId" placeholder="11afwaqnkzbU5fMTXIpn_su7EB4AbuybhsHonNzEc-VU" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 outline-none focus:border-blue-500 font-mono">
+                    <span class="text-[10px] text-slate-500 mt-1 block">Default prefilled with your specified railway Google Sheet.</span>
+                </div>
+
+                <!-- Sheet Name / Range -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Sheet Tab Name</label>
+                        <input type="text" id="configSheetTab" placeholder="Sheet1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Range</label>
+                        <input type="text" id="configRange" placeholder="A1:BL1000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 outline-none focus:border-blue-500 font-mono">
+                    </div>
+                </div>
+
+                <!-- API Key Input -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Google Sheets API Key</label>
+                    <div class="relative">
+                        <input type="password" id="configApiKey" placeholder="Paste your API key here..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-xs text-slate-200 outline-none focus:border-blue-500 font-mono">
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300">
+                            <i id="toggleEye" class="fa-solid fa-eye-slash text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                <button onclick="toggleConfigModal(false)" class="px-4 py-2 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl text-xs font-semibold">
+                    Close
+                </button>
+                <button onclick="saveConfiguration()" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-blue-500/20">
+                    Save Config & Sync
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROW DETAILED VIEW MODAL (INSPECT ALL 64 COLUMNS) -->
+    <div id="rowDetailsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-end z-50 transition-opacity duration-300 opacity-0 pointer-events-none hidden">
+        <div class="bg-slate-900 border-l border-slate-800 h-full max-w-2xl w-full p-6 shadow-2xl flex flex-col justify-between transform translate-x-full transition-transform duration-300" id="rowDetailsContent">
+            
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-file-invoice text-blue-500"></i> Full Submission Report Details
+                    </h3>
+                    <p class="text-xs text-slate-400">Inspecting all 64 indicators for the selected record row.</p>
+                </div>
+                <button onclick="toggleRowModal(false)" class="p-1 text-slate-400 hover:text-white bg-slate-800 rounded-lg border border-slate-700">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Category Specific Tab Navigation inside Details -->
+            <div class="bg-slate-950/80 p-1.5 rounded-xl border border-slate-800/80 flex items-center gap-1 overflow-x-auto my-3 shrink-0">
+                <button onclick="switchInspectCategory('General')" class="inspect-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white" id="inspectTabGeneral">General</button>
+                <button onclick="switchInspectCategory('Train Ordering')" class="inspect-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white" id="inspectTabTrain Ordering">Train Orders</button>
+                <button onclick="switchInspectCategory('PT & Balancing')" class="inspect-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white" id="inspectTabPT & Balancing">PT Balancing</button>
+                <button onclick="switchInspectCategory('Crew & Resources')" class="inspect-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white" id="inspectTabCrew & Resources">Crew / RR</button>
+                <button onclick="switchInspectCategory('Performance')" class="inspect-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white" id="inspectTabPerformance">Performance</button>
+                <button onclick="switchInspectCategory('Counselling & Overdue')" class="inspect-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white" id="inspectTabCounselling & Overdue">Counselling & Alerts</button>
+            </div>
+
+            <!-- Inspect Grid Container -->
+            <div class="flex-1 overflow-y-auto pr-1 py-2" id="inspectPropertiesGrid">
+                <!-- Dynamically populated properties -->
+            </div>
+
+            <!-- Modal Footer Info -->
+            <div class="border-t border-slate-800 pt-4 mt-4 bg-slate-950 -mx-6 -mb-6 p-6 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+                <div class="flex items-center gap-2 text-[11px] text-slate-500">
+                    <i class="fa-solid fa-circle-check text-emerald-500"></i> Column verification matched exactly (A to BL)
+                </div>
+                <button onclick="toggleRowModal(false)" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-blue-500/10">
+                    Completed Review
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION POPUPS -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 border border-slate-800 text-xs px-4 py-3 rounded-2xl shadow-2xl z-50 flex items-center gap-2.5 transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toastMessage" class="text-slate-300 font-medium">Synced successfully</span>
+    </div>
+
+    <!-- MAIN DASHBOARD CORE CODE -->
+    <script>
+        // Set exact Google Sheet pre-configured parameters from your input
+        const SPREADSHEET_ID_DEFAULT = '11afwaqnkzbU5fMTXIpn_su7EB4AbuybhsHonNzEc-VU';
+        const SHEET_TAB_DEFAULT = 'Sheet1';
+        const SHEET_RANGE_DEFAULT = 'A1:BL1000';
+
+        // Set API Key (Yaha aap apni Google Sheets API Key directly assign kar sakte hain)
+        let googleApiKey = 'AIzaSyAw23pJz0K9fZb2rRRAe2C2cJDilRc0Kac'; 
+        let googleSheetId = SPREADSHEET_ID_DEFAULT;
+        let googleSheetTab = SHEET_TAB_DEFAULT;
+        let googleSheetRange = SHEET_RANGE_DEFAULT;
+
+        let activeDataSource = 'mock'; // 'mock' or 'live'
+        let fullSubmissionData = []; // Store containing 64 column arrays of rows
+        let filteredSubmissionData = []; // Filtered rows based on Date Range and Lobby
+        let activeInspectCategory = 'General';
+        let inspectedRowIndex = null;
+
+        // Visual Charts instances
+        let trendChartInstance = null;
+        let distributionChartInstance = null;
+
+      // Initialize App
+        window.onload = function() {
+            // Setup default date range in UI to YESTERDAY (for morning review)
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            
+            document.getElementById('filterStartDate').value = yesterdayStr;
+            document.getElementById('filterEndDate').value = yesterdayStr;
+
+            // Highlight "Today" preset button by default since it now represents yesterday's data
+            document.getElementById('preset-1').className = "px-2.5 py-1 rounded-lg text-xs font-medium transition-all text-slate-200 bg-slate-800 shadow";
+            document.getElementById('preset-7').className = "px-2.5 py-1 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-white";
+            document.getElementById('preset-14').className = "px-2.5 py-1 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-white";
+
+            // Set active data source to live for direct fetching
+            activeDataSource = 'live';
+            
+            // Auto fetch live data immediately on page load
+            refreshData();
+        };
+        // Complete 64 Column Details mapping array from your image mappings & names
+        const COLUMN_SPECS = [
+            { col: 0, letter: 'A', header: 'Timestamp', label: 'Timestamp (Auto-Generated)', category: 'General', icon: 'fa-regular fa-clock' },
+            { col: 1, letter: 'B', header: 'Date', label: 'Report Date', category: 'General', icon: 'fa-regular fa-calendar' },
+            { col: 2, letter: 'C', header: 'Lobby', label: 'Operations Lobby', category: 'General', icon: 'fa-solid fa-building-flag' },
+            { col: 3, letter: 'D', header: 'TO Elec UP', label: 'Electric Train Ordering (UP Dir)', category: 'Train Ordering', icon: 'fa-solid fa-bolt' },
+            { col: 4, letter: 'E', header: 'TO Elec DN', label: 'Electric Train Ordering (DN Dir)', category: 'Train Ordering', icon: 'fa-solid fa-bolt' },
+            { col: 5, letter: 'F', header: 'TO Diesel UP', label: 'Diesel Train Ordering (UP Dir)', category: 'Train Ordering', icon: 'fa-solid fa-gas-pump' },
+            { col: 6, letter: 'G', header: 'TO Diesel DN', label: 'Diesel Train Ordering (DN Dir)', category: 'Train Ordering', icon: 'fa-solid fa-gas-pump' },
+            { col: 7, letter: 'H', header: 'TO Shuttling', label: 'Total Shuttling Train Orderings', category: 'Train Ordering', icon: 'fa-solid fa-arrows-left-right' },
+            { col: 8, letter: 'I', header: 'TO RHQ', label: 'Total Running Headquarter (RHQ) TO', category: 'Train Ordering', icon: 'fa-solid fa-building-columns' },
+            { col: 9, letter: 'J', header: 'RHQ Detail', label: 'Detailed RHQ TO Distribution', category: 'Train Ordering', icon: 'fa-solid fa-circle-info' },
+            { col: 10, letter: 'K', header: 'RTO UP', label: 'Re TO (RTO) / TO Putback (UP Dir)', category: 'Train Ordering', icon: 'fa-solid fa-rotate-left' },
+            { col: 11, letter: 'L', header: 'RTO DN', label: 'Re TO (RTO) / TO Putback (DN Dir)', category: 'Train Ordering', icon: 'fa-solid fa-rotate-left' },
+            { col: 12, letter: 'M', header: 'FOIS Elec', label: 'FOIS Generated TO (Electric)', category: 'Train Ordering', icon: 'fa-solid fa-network-wired' },
+            { col: 13, letter: 'N', header: 'FOIS Diesel', label: 'FOIS Generated TO (Diesel)', category: 'Train Ordering', icon: 'fa-solid fa-network-wired' },
+            { col: 14, letter: 'O', header: 'TKE UP', label: 'TKE Cases (UP Dir)', category: 'Train Ordering', icon: 'fa-solid fa-circle-exclamation' },
+            { col: 15, letter: 'P', header: 'TKE DN', label: 'TKE Cases (DN Dir)', category: 'Train Ordering', icon: 'fa-solid fa-circle-exclamation' },
+            { col: 16, letter: 'Q', header: 'PT UP', label: 'Section PT / Balancing (UP Dir)', category: 'PT & Balancing', icon: 'fa-solid fa-arrows-up-down' },
+            { col: 17, letter: 'R', header: 'PT DN', label: 'Section PT / Balancing (DN Dir)', category: 'PT & Balancing', icon: 'fa-solid fa-arrows-up-down' },
+            { col: 18, letter: 'S', header: 'PT In Jeep', label: 'Incoming PT by Jeep Logistics', category: 'PT & Balancing', icon: 'fa-solid fa-car' },
+            { col: 19, letter: 'T', header: 'PT In Train', label: 'Incoming PT by Train runs', category: 'PT & Balancing', icon: 'fa-solid fa-train' },
+            { col: 20, letter: 'U', header: 'PT Out Jeep', label: 'Outgoing PT by Jeep Logistics', category: 'PT & Balancing', icon: 'fa-solid fa-car' },
+            { col: 21, letter: 'V', header: 'PT Out Train', label: 'Outgoing PT by Train runs', category: 'PT & Balancing', icon: 'fa-solid fa-train' },
+            { col: 22, letter: 'W', header: 'Crew HQ Elec', label: 'Electric HQ Crew Utilized count', category: 'Crew & Resources', icon: 'fa-solid fa-user-group' },
+            { col: 23, letter: 'X', header: 'Crew HQ Diesel', label: 'Diesel HQ Crew Utilized count', category: 'Crew & Resources', icon: 'fa-solid fa-user-group' },
+            { col: 24, letter: 'Y', header: 'Crew OS Elec', label: 'Electric Outstation (OS) Crew Utilized', category: 'Crew & Resources', icon: 'fa-solid fa-users' },
+            { col: 25, letter: 'Z', header: 'Crew OS Elec Detail', label: 'Electric OS Crew Utilization Detail', category: 'Crew & Resources', icon: 'fa-solid fa-circle-nodes' },
+            { col: 26, letter: 'AA', header: 'Crew OS Diesel', label: 'Diesel Outstation (OS) Crew Utilized', category: 'Crew & Resources', icon: 'fa-solid fa-users' },
+            { col: 27, letter: 'AB', header: 'Crew OS Diesel Detail', label: 'Diesel OS Crew Utilization Detail', category: 'Crew & Resources', icon: 'fa-solid fa-circle-nodes' },
+            { col: 28, letter: 'AC', header: 'Beds RR', label: 'Total Available Beds in Running Room', category: 'Crew & Resources', icon: 'fa-solid fa-bed' },
+            { col: 29, letter: 'AD', header: 'Occ RR', label: 'Bed Occupancy in Running Room', category: 'Crew & Resources', icon: 'fa-solid fa-check-double' },
+            { col: 30, letter: 'AE', header: 'Jeep Total', label: 'Total Jeep Available in Fleet', category: 'Crew & Resources', icon: 'fa-solid fa-truck-pickup' },
+            { col: 31, letter: 'AF', header: 'Jeep Breakdown', label: 'Total Jeeps Out of Service (Breakdown)', category: 'Crew & Resources', icon: 'fa-solid fa-car-burst' },
+            { col: 32, letter: 'AG', header: 'Jeep Breakdown Reason', label: 'Reason for Jeep Fleet Breakdown', category: 'Crew & Resources', icon: 'fa-solid fa-comment-slash' },
+            { col: 33, letter: 'AH', header: 'FSD ALP', label: 'Food Security Allowance (FSD) Taken by ALP', category: 'Crew & Resources', icon: 'fa-solid fa-utensils' },
+            { col: 34, letter: 'AI', header: 'FSD NOT ALP', label: 'FSD Not Taken by ALP', category: 'Crew & Resources', icon: 'fa-solid fa-circle-minus' },
+            { col: 35, letter: 'AJ', header: 'PDD UP', label: 'Pre Departure Delay (PDD Mins) (UP Dir)', category: 'Performance', icon: 'fa-regular fa-clock' },
+            { col: 36, letter: 'AK', header: 'PDD DN', label: 'Pre Departure Delay (PDD Mins) (DN Dir)', category: 'Performance', icon: 'fa-regular fa-clock' },
+            { col: 37, letter: 'AL', header: 'UP PDD >2 Hrs', label: 'Total Number of PDD More than 2 hrs (UP)', category: 'Performance', icon: 'fa-solid fa-hourglass-half' },
+            { col: 38, letter: 'AM', header: 'DN PDD >2 Hrs', label: 'Total Number of PDD More than 2 hrs (DN)', category: 'Performance', icon: 'fa-solid fa-hourglass-half' },
+            { col: 39, letter: 'AN', header: 'SOSO 12', label: 'SOSO Above 12 Hrs count', category: 'Performance', icon: 'fa-solid fa-business-time' },
+            { col: 40, letter: 'AO', header: 'SOSO 14', label: 'SOSO Above 14 Hrs count', category: 'Performance', icon: 'fa-solid fa-triangle-exclamation' },
+            { col: 41, letter: 'AP', header: 'SOWS 12', label: 'SOWS Above 12 Hrs count', category: 'Performance', icon: 'fa-solid fa-business-time' },
+            { col: 42, letter: 'AQ', header: 'SOWS 14', label: 'SOWS Above 14 Hrs count', category: 'Performance', icon: 'fa-solid fa-triangle-exclamation' },
+            { col: 43, letter: 'AR', header: 'TOTAL WOR', label: 'Total Number of Without Relief (WOR)', category: 'Performance', icon: 'fa-solid fa-user-xmark' },
+            { col: 44, letter: 'AS', header: 'Manual SignOn', label: 'Manual Sign-On CMS counts', category: 'Performance', icon: 'fa-solid fa-signature' },
+            { col: 45, letter: 'AT', header: 'Manual SignOn Reason', label: 'Reason for Manual Sign-On CMS', category: 'Performance', icon: 'fa-solid fa-file-pen' },
+            { col: 46, letter: 'AU', header: 'Manual SignOff', label: 'Manual Sign-Off CMS counts', category: 'Performance', icon: 'fa-solid fa-signature' },
+            { col: 47, letter: 'AV', header: 'Manual SignOff Reason', label: 'Reason for Manual Sign-Off CMS', category: 'Performance', icon: 'fa-solid fa-file-pen' },
+            { col: 48, letter: 'AW', header: 'Total LP Casualities', label: 'Total LP Casualties (Non-Run Status)', category: 'Performance', icon: 'fa-solid fa-person-circle-exclamation' },
+            { col: 49, letter: 'AX', header: 'LP Casualities Code Detail', label: 'LP Casualties Details (Code Wise)', category: 'Performance', icon: 'fa-solid fa-tag' },
+            { col: 50, letter: 'AY', header: 'Total ALP Casualities', label: 'Total ALP Casualties (Non-Run Status)', category: 'Performance', icon: 'fa-solid fa-person-circle-exclamation' },
+            { col: 51, letter: 'AZ', header: 'ALP Casualities Code Detail', label: 'ALP Casualties Details (Code Wise)', category: 'Performance', icon: 'fa-solid fa-tag' },
+            { col: 52, letter: 'BA', header: 'RS Valve Lobby', label: 'RS Valve Op. ALPs (Lobby Level)', category: 'Counselling & Overdue', icon: 'fa-solid fa-arrows-turn-to-dots' },
+            { col: 53, letter: 'BB', header: 'RS Valve Loco', label: 'RS Valve Op. ALPs (Loco/CTO)', category: 'Counselling & Overdue', icon: 'fa-solid fa-circle-play' },
+            { col: 54, letter: 'BC', header: 'Mass Couns Sessions', label: 'Mass Counselling Sessions Conducted', category: 'Counselling & Overdue', icon: 'fa-solid fa-bullhorn' },
+            { col: 55, letter: 'BD', header: 'Mass Couns CLI', label: "Mass Counselling CLI's Attended", category: 'Counselling & Overdue', icon: 'fa-solid fa-user-tie' },
+            { col: 56, letter: 'BE', header: 'Mass Couns LP', label: "Mass Counselling LP's Attended", category: 'Counselling & Overdue', icon: 'fa-solid fa-graduation-cap' },
+            { col: 57, letter: 'BF', header: 'Mass Couns LPS', label: "Mass Counselling LPS's Attended", category: 'Counselling & Overdue', icon: 'fa-solid fa-user-graduate' },
+            { col: 58, letter: 'BG', header: 'Mass Couns ALP', label: "Mass Counselling ALP's Attended", category: 'Counselling & Overdue', icon: 'fa-solid fa-users-viewfinder' },
+            { col: 59, letter: 'BH', header: 'Auto Signal Overdue', label: 'Auto Signal Competency Overdue count', category: 'Counselling & Overdue', icon: 'fa-solid fa-shield-halved' },
+            { col: 60, letter: 'BI', header: 'CRC Overdue', label: 'Total Number of CRC Overdue', category: 'Counselling & Overdue', icon: 'fa-solid fa-triangle-exclamation' },
+            { col: 61, letter: 'BJ', header: 'Reason CRC Overdue', label: 'Reason for CRC Overdue Status', category: 'Counselling & Overdue', icon: 'fa-solid fa-comment-dots' },
+            { col: 62, letter: 'BK', header: 'PME Overdue', label: 'Total Number of PME (Medical) Overdue', category: 'Counselling & Overdue', icon: 'fa-solid fa-suitcase-medical' },
+            { col: 63, letter: 'BL', header: 'Reason PME Overdue', label: 'Reason for PME Overdue Status', category: 'Counselling & Overdue', icon: 'fa-solid fa-comment-medical' }
+        ];
+
+// Toggle Data Sources (Cleaned up for strict live mode)
+        function toggleDataSource(mode) {
+            activeDataSource = mode;
+            
+            if (mode === 'live' && (!googleApiKey || googleApiKey === 'YOUR_API_KEY_HERE' || googleApiKey === '')) {
+                showToast("Google API Key missing or misconfigured!", "error");
+                activeDataSource = 'mock';
+            }
+            refreshData();
+        }
+        // Toggle Configuration Modal View
+        function toggleConfigModal(show) {
+            const modal = document.getElementById('configModal');
+            if (show) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0', 'pointer-events-none');
+                }, 10);
+            } else {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        // Save Credentials and sync
+        function saveConfiguration() {
+            googleSheetId = document.getElementById('configSheetId').value.trim() || SPREADSHEET_ID_DEFAULT;
+            googleSheetTab = document.getElementById('configSheetTab').value.trim() || SHEET_TAB_DEFAULT;
+            googleSheetRange = document.getElementById('configRange').value.trim() || SHEET_RANGE_DEFAULT;
+            googleApiKey = document.getElementById('configApiKey').value.trim();
+
+            toggleConfigModal(false);
+
+            if (googleApiKey && googleApiKey !== 'YOUR_API_KEY_HERE') {
+                showToast("Configuration saved! Attempting Google Sync...", "info");
+                toggleDataSource('live');
+            } else {
+                showToast("Config saved. API key not set, remaining in Demo Mode.", "info");
+                toggleDataSource('mock');
+            }
+        }
+
+        // Fetch / Refresh Core Action
+        function refreshData() {
+            const icon = document.getElementById('syncIcon');
+            icon.classList.add('fa-spin');
+
+            if (activeDataSource === 'live') {
+                fetchGoogleSheetData()
+                    .then(data => {
+                        fullSubmissionData = data;
+                        processAndDisplay();
+                        showToast("Successfully synchronized with Google Sheet!", "success");
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showToast("Failed to fetch live sheet. Reverting to Offline Demo...", "error");
+                        toggleDataSource('mock');
+                    })
+                    .finally(() => {
+                        icon.classList.remove('fa-spin');
+                    });
+            } else {
+                // Generate simulated data matching 11 lobbies
+                setTimeout(() => {
+                    fullSubmissionData = generateMockData();
+                    processAndDisplay();
+                    showToast("Simulated operational logs generated!", "success");
+                    icon.classList.remove('fa-spin');
+                }, 500);
+            }
+        }
+
+        // Live Fetch from Google Sheets API
+        function fetchGoogleSheetData() {
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${googleSheetTab}!${googleSheetRange}?key=${googleApiKey}`;
+            
+            return fetch(url)
+                .then(res => {
+                    if (!res.ok) throw new Error("Network Response Fail");
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data.values || data.values.length <= 1) {
+                        throw new Error("No operational records in sheet range.");
+                    }
+                    
+                    const headerRow = data.values[0];
+                    const rawRows = data.values.slice(1);
+                    
+                    // Resilient Column Header Index Mapping (shuffled resilient indexing)
+                    const indexMap = Array(64).fill(-1);
+                    
+                    // Match spreadsheet headings to known keys
+                    COLUMN_SPECS.forEach(spec => {
+                        const colName = spec.header;
+                        const idx = headerRow.findIndex(h => h && h.trim().toLowerCase() === colName.toLowerCase());
+                        indexMap[spec.col] = idx;
+                    });
+
+                    // Parse each row according to the mapped columns
+                    const parsedData = rawRows.map(row => {
+                        const parsedRow = Array(64).fill("");
+                        COLUMN_SPECS.forEach(spec => {
+                            const actualIdxInSheet = indexMap[spec.col];
+                            if (actualIdxInSheet !== -1 && actualIdxInSheet < row.length) {
+                                let val = row[actualIdxInSheet];
+                                // Parse to proper types
+                                if (spec.col !== 0 && spec.col !== 1 && spec.col !== 2 && spec.col !== 9 && spec.col !== 25 && spec.col !== 27 && spec.col !== 32 && spec.col !== 45 && spec.col !== 47 && spec.col !== 49 && spec.col !== 51 && spec.col !== 61 && spec.col !== 63) {
+                                    val = parseFloat(val) || 0;
+                                }
+                                parsedRow[spec.col] = val;
+                            } else {
+                                parsedRow[spec.col] = (spec.col === 0 || spec.col === 1 || spec.col === 2) ? "" : 0;
+                            }
+                        });
+                        return parsedRow;
+                    });
+                    
+                    return parsedData;
+                });
+        }
+
+        // Mock Operational Data Engine
+        function generateMockData() {
+            const lobbies = ['BSP', 'KRBA', 'SDL', 'RIG', 'AKT', 'USL', 'PND', 'BRJN', 'BJRI', 'SJQ', 'KHS'];
+            const data = [];
+            const today = new Date();
+            
+            // Loop past 14 days
+            for (let d = 14; d >= 0; d--) {
+                const date = new Date();
+                date.setDate(today.getDate() - d);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                lobbies.forEach(lobby => {
+                    // Simulate that 85% of lobbies report daily
+                    if (Math.random() > 0.15) {
+                        const timestamp = `${dateStr} 08:${String(Math.floor(Math.random()*59)).padStart(2,'0')}:${String(Math.floor(Math.random()*59)).padStart(2,'0')}`;
+                        
+                        // 1. Train Ordering
+                        const toElecUp = Math.floor(Math.random() * 8) + 2;
+                        const toElecDn = Math.floor(Math.random() * 8) + 2;
+                        const toDieselUp = Math.floor(Math.random() * 5) + 1;
+                        const toDieselDn = Math.floor(Math.random() * 5) + 1;
+                        const toShuttling = Math.floor(Math.random() * 3);
+                        const toRhq = toElecUp + toElecDn + toDieselUp + toDieselDn;
+                        const rhqDetail = `BSP-${Math.floor(toRhq*0.6)}, KRBA-${toRhq - Math.floor(toRhq*0.6)}`;
+                        
+                        const rtoUp = Math.floor(Math.random() * 2);
+                        const rtoDn = Math.floor(Math.random() * 2);
+                        const foisElec = Math.floor(Math.random() * 10) + 3;
+                        const foisDiesel = Math.floor(Math.random() * 6) + 1;
+                        const tkeUp = Math.floor(Math.random() * 2);
+                        const tkeDn = Math.floor(Math.random() * 2);
+                        
+                        // 2. PT Balancing
+                        const ptUp = Math.floor(Math.random() * 4);
+                        const ptDn = Math.floor(Math.random() * 4);
+                        const ptInJeep = Math.floor(Math.random() * 3);
+                        const ptInTrain = Math.floor(Math.random() * 3);
+                        const ptOutJeep = Math.floor(Math.random() * 3);
+                        const ptOutTrain = Math.floor(Math.random() * 3);
+                        
+                        // 3. Crew Util & Resources
+                        const crewHqElec = Math.floor(Math.random() * 25) + 15;
+                        const crewHqDiesel = Math.floor(Math.random() * 15) + 5;
+                        const crewOsElec = Math.floor(Math.random() * 10) + 2;
+                        const crewOsElecDetail = `BSP-${Math.floor(crewOsElec/2)}, KRBA-${crewOsElec - Math.floor(crewOsElec/2)}`;
+                        const crewOsDiesel = Math.floor(Math.random() * 6) + 1;
+                        const crewOsDieselDetail = `RIG-${Math.floor(crewOsDiesel/2)}, SDL-${crewOsDiesel - Math.floor(crewOsDiesel/2)}`;
+                        
+                        // Beds
+                        const bedsRr = lobby === 'BSP' ? 80 : lobby === 'KRBA' ? 60 : 40;
+                        const occRr = Math.floor(Math.random() * (bedsRr - 15)) + 10;
+                        
+                        const jeepTotal = 3;
+                        const jeepBreakdown = Math.random() > 0.92 ? 1 : 0;
+                        const jeepBreakdownReason = jeepBreakdown > 0 ? "ENGINE OVERHEATING" : "NIL";
+                        
+                        const fsdAlp = Math.floor(Math.random() * 12) + 4;
+                        const fsdNotAlp = Math.floor(Math.random() * 2);
+                        
+                        // 4. Performance & Delay Metrics
+                        const pddUp = Math.floor(Math.random() * 120) + 30;
+                        const pddDn = Math.floor(Math.random() * 120) + 30;
+                        const upPdd2 = pddUp > 120 ? Math.floor(Math.random() * 2) + 1 : 0;
+                        const dnPdd2 = pddDn > 120 ? Math.floor(Math.random() * 2) + 1 : 0;
+                        
+                        const soso12 = Math.floor(Math.random() * 2);
+                        const soso14 = Math.floor(Math.random() * 1);
+                        const sows12 = Math.floor(Math.random() * 2);
+                        const sows14 = Math.floor(Math.random() * 1);
+                        const totalWor = Math.floor(Math.random() * 2);
+                        
+                        const manualSignOn = Math.floor(Math.random() * 3);
+                        const manualSignOnReason = manualSignOn > 0 ? "BIOMETRIC RE-SCAN" : "NIL";
+                        const manualSignOff = Math.floor(Math.random() * 2);
+                        const manualSignOffReason = manualSignOff > 0 ? "CMS TERMINAL HANG" : "NIL";
+                        
+                        const totalLpCas = Math.random() > 0.94 ? 1 : 0;
+                        const lpCasDetail = totalLpCas > 0 ? "CL-3" : "NIL";
+                        const totalAlpCas = Math.random() > 0.90 ? 1 : 0;
+                        const alpCasDetail = totalAlpCas > 0 ? "LAP-5" : "NIL";
+                        
+                        // 5. Counselling & Overdues
+                        const rsValveLobby = Math.floor(Math.random() * 10) + 5;
+                        const rsValveLoco = Math.floor(Math.random() * 8) + 3;
+                        const massCounsSessions = Math.floor(Math.random() * 2) + 1;
+                        const massCounsCli = Math.floor(Math.random() * 3) + 1;
+                        const massCounsLp = Math.floor(Math.random() * 15) + 5;
+                        const massCounsLps = Math.floor(Math.random() * 8) + 2;
+                        const massCounsAlp = Math.floor(Math.random() * 20) + 10;
+                        
+                        const autoSignalOverdue = Math.floor(Math.random() * 3);
+                        const crcOverdue = Math.floor(Math.random() * 2);
+                        const reasonCrcOverdue = crcOverdue > 0 ? "CMS FAILURE" : "NIL";
+                        const pmeOverdue = Math.floor(Math.random() * 2);
+                        const reasonPmeOverdue = pmeOverdue > 0 ? "ABSENT" : "NIL";
+                        
+                        // Complete 64 row columns pushed
+                        data.push([
+                            timestamp, dateStr, lobby, toElecUp, toElecDn, toDieselUp, toDieselDn, toShuttling,
+                            toRhq, rhqDetail, rtoUp, rtoDn, foisElec, foisDiesel, tkeUp, tkeDn,
+                            ptUp, ptDn, ptInJeep, ptInTrain, ptOutJeep, ptOutTrain,
+                            crewHqElec, crewHqDiesel, crewOsElec, crewOsElecDetail, crewOsDiesel, crewOsDieselDetail,
+                            bedsRr, occRr, jeepTotal, jeepBreakdown, jeepBreakdownReason, fsdAlp, fsdNotAlp,
+                            pddUp, pddDn, upPdd2, dnPdd2, soso12, soso14, sows12, sows14, totalWor,
+                            manualSignOn, manualSignOnReason, manualSignOff, manualSignOffReason,
+                            totalLpCas, lpCasDetail, totalAlpCas, alpCasDetail,
+                            rsValveLobby, rsValveLoco, massCounsSessions, massCounsCli, massCounsLp, massCounsLps, massCounsAlp,
+                            autoSignalOverdue, crcOverdue, reasonCrcOverdue, pmeOverdue, reasonPmeOverdue
+                        ]);
+                    }
+                });
+            }
+            return data;
+        }
+
+       // Set Date Range Presets
+        function setDateRangePreset(days) {
+            const today = new Date();
+            const start = new Date();
+            
+            if (days === 1) {
+                // If "Today" button is clicked, show Yesterday's data only
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
+                document.getElementById('filterStartDate').value = yesterdayStr;
+                document.getElementById('filterEndDate').value = yesterdayStr;
+            } else {
+                // For Last 7 or 14 Days, keep standard behavior
+                start.setDate(today.getDate() - days);
+                document.getElementById('filterStartDate').value = start.toISOString().split('T')[0];
+                document.getElementById('filterEndDate').value = today.toISOString().split('T')[0];
+            }
+            // Highlight Preset Buttons
+            [1, 7, 14].forEach(d => {
+                const btn = document.getElementById('preset-' + d);
+                if (d === days) {
+                    btn.className = "px-2.5 py-1 rounded-lg text-xs font-medium transition-all text-slate-200 bg-slate-800 shadow";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-white";
+                }
+            });
+
+            handleFiltersChange();
+        }
+
+        // Refresh calculations and UI when filters change
+        function handleFiltersChange() {
+            processAndDisplay();
+        }
+
+        // Process data filterings and metrics
+        function processAndDisplay() {
+            const selectedLobby = document.getElementById('filterLobby').value;
+            const startDateStr = document.getElementById('filterStartDate').value;
+            const endDateStr = document.getElementById('filterEndDate').value;
+
+            const start = startDateStr ? new Date(startDateStr) : null;
+            const end = endDateStr ? new Date(endDateStr) : null;
+            if (end) end.setHours(23, 59, 59, 999); // include entire end day
+
+            // Apply Filters
+            filteredSubmissionData = fullSubmissionData.filter(row => {
+                const rowDate = new Date(row[1]); // Column B (Date)
+                const rowLobby = row[2]; // Column C (Lobby)
+
+                // Check Lobby Match
+                if (selectedLobby !== 'ALL' && rowLobby !== selectedLobby) return false;
+
+                // Check Date Range Match
+                if (start && rowDate < start) return false;
+                if (end && rowDate > end) return false;
+
+                return true;
+            });
+
+            // Re-Sort filtered data by timestamp descending
+            filteredSubmissionData.sort((a, b) => new Date(b[0]) - new Date(a[0]));
+
+            // Update DOM Components
+            calculateKpiDashboard();
+            updateDetailedSubTabs();
+            populateDataLogsTable();
+            renderOperationalCharts();
+        }
+
+// Calculate Executive KPIs
+        function calculateKpiDashboard() {
+            let totalTo = 0;
+            let totalToElec = 0;
+            let totalToDiesel = 0;
+
+            let totalBeds = 0;
+            let totalOccBeds = 0;
+
+            let totalJeeps = 0;
+            let jeepBreakdownCount = 0;
+
+            // Updated PDD Trackers
+            let sumPddUp = 0, countPddUp = 0;
+            let sumPddDn = 0, countPddDn = 0;
+            let highDelaysUp = 0;
+            let highDelaysDn = 0;
+
+            let pmeOverdues = 0;
+            let crcOverdues = 0;
+            let autoSignalOverdues = 0;
+
+            filteredSubmissionData.forEach(row => {
+                // Train orders (col 3,4,5,6)
+                const elecTo = (row[3] || 0) + (row[4] || 0);
+                const dieselTo = (row[5] || 0) + (row[6] || 0);
+                totalToElec += elecTo;
+                totalToDiesel += dieselTo;
+                totalTo += (elecTo + dieselTo);
+
+                // Beds (col 28, 29)
+                totalBeds += (row[28] || 0);
+                totalOccBeds += (row[29] || 0);
+
+                // Jeeps (col 30, 31)
+                totalJeeps += (row[30] || 0);
+                jeepBreakdownCount += (row[31] || 0);
+
+                // Delay parsing (col 35, 36, 37, 38)
+                const pddUp = row[35] || 0;
+                const pddDn = row[36] || 0;
+                if (pddUp > 0) { sumPddUp += pddUp; countPddUp++; }
+                if (pddDn > 0) { sumPddDn += pddDn; countPddDn++; }
+                
+                highDelaysUp += (row[37] || 0);
+                highDelaysDn += (row[38] || 0);
+
+                // Overdues (col 59, 60, 62)
+                autoSignalOverdues += (row[59] || 0);
+                crcOverdues += (row[60] || 0);
+                pmeOverdues += (row[62] || 0);
+            });
+           
+            // Set KPI Values
+            document.getElementById('kpiTrainOrders').innerText = totalTo;
+            document.getElementById('subKpiElecTo').innerText = totalToElec;
+            document.getElementById('subKpiDieselTo').innerText = totalToDiesel;
+
+            // Bed occupancy %
+            const occupancyRate = totalBeds > 0 ? Math.round((totalOccBeds / totalBeds) * 100) : 0;
+            document.getElementById('kpiRrOccupancy').innerText = occupancyRate + '%';
+            document.getElementById('subKpiBedsOcc').innerText = totalOccBeds;
+            document.getElementById('subKpiBedsTotal').innerText = totalBeds;
+
+            // Jeep Status
+            const jeepActive = totalJeeps - jeepBreakdownCount;
+            const jeepServicePercent = totalJeeps > 0 ? Math.round((jeepActive / totalJeeps) * 100) : 100;
+            document.getElementById('kpiJeepStatus').innerText = jeepServicePercent + '%';
+            document.getElementById('subKpiJeepsActive').innerText = jeepActive;
+            
+            const breakdownEl = document.getElementById('subKpiJeepBreakdown');
+            if (jeepBreakdownCount > 0) {
+                breakdownEl.className = "text-red-400 font-semibold";
+                breakdownEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation animate-bounce"></i> ${jeepBreakdownCount} Breakdowns!`;
+            } else {
+                breakdownEl.className = "text-emerald-400 font-semibold";
+                breakdownEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> No Breakdowns`;
+            }
+
+            // Helper function to convert minutes to hh:mm format cleanly
+            function formatToHhMm(totalMinutes) {
+                if (totalMinutes <= 0) return "00:00";
+                const hrs = Math.floor(totalMinutes / 60);
+                const mins = Math.round(totalMinutes % 60);
+                return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+            }
+
+            // Calculate precise averages
+            const avgPddUpMins = countPddUp > 0 ? (sumPddUp / countPddUp) : 0;
+            const avgPddDnMins = countPddDn > 0 ? (sumPddDn / countPddDn) : 0;
+            // Total minutes divided by total runs across both directions
+            const totalPddMins = sumPddUp + sumPddDn;
+            const totalPddCount = countPddUp + countPddDn;
+            const avgPddOverallMins = totalPddCount > 0 ? (totalPddMins / totalPddCount) : 0;
+
+            // Update UI components with hh:mm and split indicators
+            document.getElementById('kpiAvgPddUp').innerText = formatToHhMm(avgPddUpMins);
+            document.getElementById('kpiAvgPddDn').innerText = formatToHhMm(avgPddDnMins);
+            document.getElementById('kpiAvgPddOverall').innerText = formatToHhMm(avgPddOverallMins);
+            document.getElementById('subKpiHighDelaysUp').innerText = highDelaysUp;
+            document.getElementById('subKpiHighDelaysDn').innerText = highDelaysDn;
+
+            // Compliance
+            const combinedOverdues = autoSignalOverdues + crcOverdues + pmeOverdues;
+            document.getElementById('kpiOverdues').innerText = combinedOverdues;
+            document.getElementById('subKpiPmeOverdue').innerText = pmeOverdues;
+            document.getElementById('subKpiCrcOverdue').innerText = crcOverdues;
+            document.getElementById('subKpiAutoOverdue').innerText = autoSignalOverdues;
+
+            // --- GLOBAL DEFALUTER LOBBIES CHECKER ENGINE (TOP PANEL) ---
+            const ALL_DIVISION_LOBBIES = ['AKT', 'BJRI', 'BRJN', 'BSP', 'KHS', 'KRBA', 'PND', 'RIG', 'SDL', 'SJQ', 'USL'];
+            
+            // Collect all unique lobbies that have submitted for the filtered date range
+            const submittedLobbies = new Set();
+            filteredSubmissionData.forEach(row => {
+                if (row[2]) submittedLobbies.add(row[2].trim().toUpperCase());
+            });
+
+            // Filter out the ones that haven't submitted
+            const missingLobbies = ALL_DIVISION_LOBBIES.filter(lobby => !submittedLobbies.has(lobby));
+            
+            const defaulterContainer = document.getElementById('defaulterLobbiesContainer');
+            const defaulterCountBadge = document.getElementById('txtDefaulterCount');
+
+            if (missingLobbies.length === 0) {
+                defaulterCountBadge.innerText = "All Lobbies Submitted";
+                defaulterCountBadge.className = "bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20";
+                defaulterContainer.innerHTML = `<span class="text-xs text-emerald-400 italic flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Division 100% Complete! All lobbies have submitted reports for this period.</span>`;
+            } else {
+                defaulterCountBadge.innerText = `${missingLobbies.length} Lobbies Pending`;
+                defaulterCountBadge.className = "bg-red-500/10 text-red-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-red-500/20 animate-pulse";
+                
+                // Map each missing lobby into a sharp bright red badge layout
+                defaulterContainer.innerHTML = missingLobbies.map(lobby => {
+                    return `<span class="px-3 py-1.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl text-xs font-bold font-mono tracking-wider shadow-md flex items-center gap-1.5"><i class="fa-solid fa-circle-dot text-[7px] text-red-500 animate-ping"></i> ${lobby}</span>`;
+                }).join('');
+            }
+        }
+        // Switch Navigation Tabs
+        function switchSubTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-white";
+            });
+            document.getElementById('tab-' + tabId).className = "tab-btn px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all bg-blue-600 text-white shadow";
+
+            // Panels switch
+            document.querySelectorAll('.subtab-panel').forEach(panel => panel.classList.add('hidden'));
+            document.getElementById('subtab-' + tabId).classList.remove('hidden');
+        }
+
+        // Fill Detailed Tab Views based on Filtered Data
+        function updateDetailedSubTabs() {
+            // Aggregate values from filtered rows
+            let upRuns = 0, dnRuns = 0;
+            let rtoUp = 0, rtoDn = 0, totalTke = 0;
+            let totalRhq = 0;
+            let rhqDetailsText = [];
+            
+            let ptUp = 0, ptDn = 0;
+            let ptInJeep = 0, ptInTrain = 0, ptOutJeep = 0, ptOutTrain = 0;
+
+            let crewHqElec = 0, crewHqDiesel = 0;
+            let crewOsElec = 0, crewOsDiesel = 0;
+            let osDetailsText = [];
+            let fsdAlp = 0, fsdNotAlp = 0;
+
+            // Updated PDD Trackers for Tab 4 (Casualties Variables Removed)
+            let tabSumPddUp = 0, tabCountPddUp = 0;
+            let tabSumPddDn = 0, tabCountPddDn = 0;
+            let soso12 = 0, soso14 = 0, sows12 = 0, sows14 = 0, totalWor = 0;
+            let manualSignOn = 0, manualSignOnReasons = [];
+            let manualSignOff = 0, manualSignOffReasons = [];
+
+            let rsValveLobby = 0, rsValveLoco = 0;
+            let massSessions = 0, massClis = 0, massLps = 0, massLpss = 0, massAlps = 0;
+
+            filteredSubmissionData.forEach(row => {
+                // Train Ordering
+                upRuns += (row[3] || 0) + (row[5] || 0); // TO Elec UP + TO Diesel UP
+                dnRuns += (row[4] || 0) + (row[6] || 0); // TO Elec DN + TO Diesel DN
+                rtoUp += (row[10] || 0);
+                rtoDn += (row[11] || 0);
+                totalTke += (row[14] || 0) + (row[15] || 0);
+                totalRhq += (row[8] || 0);
+                if (row[9] && row[9] !== 'NIL' && row[9] !== '') rhqDetailsText.push(row[9]);
+
+                // PT Balancing
+                ptUp += (row[16] || 0);
+                ptDn += (row[17] || 0);
+                ptInJeep += (row[18] || 0);
+                ptInTrain += (row[19] || 0);
+                ptOutJeep += (row[20] || 0);
+                ptOutTrain += (row[21] || 0);
+
+                // Crew Util
+                crewHqElec += (row[22] || 0);
+                crewHqDiesel += (row[23] || 0);
+                crewOsElec += (row[24] || 0);
+                crewOsDiesel += (row[26] || 0);
+                if (row[25] && row[25] !== 'NIL') osDetailsText.push(`Elec: ${row[25]}`);
+                if (row[27] && row[27] !== 'NIL') osDetailsText.push(`Diesel: ${row[27]}`);
+                fsdAlp += (row[33] || 0);
+                fsdNotAlp += (row[34] || 0);
+
+                // PDD Calculations for Tab 4 (Replacing Casualties)
+                const pddUp = row[35] || 0;
+                const pddDn = row[36] || 0;
+                if (pddUp > 0) { tabSumPddUp += pddUp; tabCountPddUp++; }
+                if (pddDn > 0) { tabSumPddDn += pddDn; tabCountPddDn++; }
+
+                soso12 += (row[39] || 0);
+                soso14 += (row[40] || 0);
+                sows12 += (row[41] || 0);
+                sows14 += (row[42] || 0);
+                totalWor += (row[43] || 0);
+
+                manualSignOn += (row[44] || 0);
+                if (row[45] && row[45] !== 'NIL') manualSignOnReasons.push(row[45]);
+                manualSignOff += (row[46] || 0);
+                if (row[47] && row[47] !== 'NIL') manualSignOffReasons.push(row[47]);
+
+                // Counselling
+                rsValveLobby += (row[52] || 0);
+                rsValveLoco += (row[53] || 0);
+                massSessions += (row[54] || 0);
+                massClis += (row[55] || 0);
+                massLps += (row[56] || 0);
+                massLpss += (row[57] || 0);
+                massAlps += (row[58] || 0);
+            });
+
+            // Update Tab 1 Particulars
+            const totalRuns = upRuns + dnRuns || 1;
+            document.getElementById('txtUpRuns').innerText = upRuns;
+            document.getElementById('txtDnRuns').innerText = dnRuns;
+            document.getElementById('barUpRuns').style.width = Math.round((upRuns / totalRuns) * 100) + '%';
+            document.getElementById('barDnRuns').style.width = Math.round((dnRuns / totalRuns) * 100) + '%';
+            document.getElementById('txtRtoUp').innerText = rtoUp;
+            document.getElementById('txtRtoDn').innerText = rtoDn;
+            document.getElementById('txtTotalTke').innerText = totalTke;
+            document.getElementById('txtTotalRhq').innerText = totalRhq;
+            document.getElementById('txtRhqDetails').innerText = rhqDetailsText.length > 0 ? [...new Set(rhqDetailsText)].slice(0, 3).join(', ') : 'No Distribution logs in set.';
+
+            // Update Tab 2 Particulars
+            document.getElementById('txtPtBalancingUp').innerText = ptUp;
+            document.getElementById('txtPtBalancingDn').innerText = ptDn;
+            document.getElementById('txtPtInJeep').innerText = ptInJeep;
+            document.getElementById('txtPtInTrain').innerText = ptInTrain;
+            document.getElementById('txtPtOutJeep').innerText = ptOutJeep;
+            document.getElementById('txtPtOutTrain').innerText = ptOutTrain;
+
+            // Update Tab 3 Particulars
+            document.getElementById('txtCrewHqElec').innerText = crewHqElec;
+            document.getElementById('txtCrewHqDiesel').innerText = crewHqDiesel;
+            document.getElementById('txtCrewOsElec').innerText = crewOsElec;
+            document.getElementById('txtCrewOsDiesel').innerText = crewOsDiesel;
+            document.getElementById('txtCrewOsDetails').innerText = osDetailsText.length > 0 ? [...new Set(osDetailsText)].slice(0, 2).join(' | ') : 'NIL';
+            document.getElementById('txtFsdAlp').innerText = fsdAlp;
+            document.getElementById('txtFsdNotAlp').innerText = fsdNotAlp;
+
+            // Internal helper function to format tab minutes to hh:mm format smoothly
+            function formatTabHhMm(totalMinutes) {
+                if (totalMinutes <= 0) return "00:00";
+                const hrs = Math.floor(totalMinutes / 60);
+                const mins = Math.round(totalMinutes % 60);
+                return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+            }
+
+            // Calculate exact averages for tab
+            const tabAvgUpMins = tabCountPddUp > 0 ? (tabSumPddUp / tabCountPddUp) : 0;
+            const tabAvgDnMins = tabCountPddDn > 0 ? (tabSumPddDn / tabCountPddDn) : 0;
+
+           // Calculate exact high delay cases for tab view from loop accumulation
+            let tabHighDelaysUp = 0;
+            let tabHighDelaysDn = 0;
+            filteredSubmissionData.forEach(row => {
+                tabHighDelaysUp += (row[37] || 0);
+                tabHighDelaysDn += (row[38] || 0);
+            });
+
+            // Update Tab 4 Particulars (Mapping PDD > 2 Hours and Averages)
+            document.getElementById('tabHighDelaysUp').innerText = tabHighDelaysUp;
+            document.getElementById('tabHighDelaysDn').innerText = tabHighDelaysDn;
+            document.getElementById('tabPddAvgUp').innerText = formatTabHhMm(tabAvgUpMins);
+            document.getElementById('tabPddAvgDn').innerText = formatTabHhMm(tabAvgDnMins);
+
+            // Performance metrics remaining elements
+            document.getElementById('txtSoso12').innerText = soso12;
+            document.getElementById('txtSoso14').innerText = soso14;
+            document.getElementById('txtSows12').innerText = sows12;
+            document.getElementById('txtSows14').innerText = sows14;
+            document.getElementById('txtTotalWor').innerText = totalWor;
+            document.getElementById('txtManualSignOn').innerText = manualSignOn;
+            document.getElementById('txtManualSignOnReason').innerText = manualSignOnReasons.length > 0 ? [...new Set(manualSignOnReasons)].slice(0, 2).join(', ') : 'NIL';
+            document.getElementById('txtManualSignOff').innerText = manualSignOff;
+            document.getElementById('txtManualSignOffReason').innerText = manualSignOffReasons.length > 0 ? [...new Set(manualSignOffReasons)].slice(0, 2).join(', ') : 'NIL';
+
+            // Update Tab 5 Particulars
+            document.getElementById('txtRsValveLobby').innerText = rsValveLobby;
+            document.getElementById('txtRsValveLoco').innerText = rsValveLoco;
+            document.getElementById('txtMassSessions').innerText = massSessions;
+            document.getElementById('txtMassClis').innerText = massClis;
+            document.getElementById('txtMassLps').innerText = massLps;
+            document.getElementById('txtMassLpss').innerText = massLpss;
+            document.getElementById('txtMassAlps').innerText = massAlps;
+        }
+
+        // Populate Raw Data Logs Table
+        function populateDataLogsTable() {
+            const tbody = document.getElementById('submissionsTableBody');
+            const emptyState = document.getElementById('tableEmptyState');
+            tbody.innerHTML = '';
+
+            if (filteredSubmissionData.length === 0) {
+                emptyState.classList.remove('hidden');
+                document.getElementById('txtTableShowingCount').innerText = '0';
+                document.getElementById('txtTableTotalCount').innerText = fullSubmissionData.length;
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            
+            filteredSubmissionData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/40 cursor-pointer border-b border-slate-800 transition-colors";
+                tr.ondblclick = () => inspectRowDetails(index);
+
+                // Derived attributes for table cols
+                const timestamp = row[0] || 'NIL';
+                const date = row[1] || 'NIL';
+                const lobby = row[2] || 'NIL';
+                const elecTo = `${row[3] || 0}/${row[4] || 0}`;
+                const dieselTo = `${row[5] || 0}/${row[6] || 0}`;
+                const rhq = row[8] || 0;
+                
+                // RR occupancy rate
+                const beds = row[28] || 0;
+                const occ = row[29] || 0;
+                const occRate = beds > 0 ? Math.round((occ / beds) * 100) : 0;
+                
+                // Jeep Breakdown
+                const breakdown = row[31] > 0 ? `<span class="px-2 py-0.5 rounded bg-red-950 text-red-400 font-bold">YES (${row[32]})</span>` : `<span class="text-slate-500">No</span>`;
+                
+                // Delays & Overdues
+                const avgPdd = Math.round(((row[35] || 0) + (row[36] || 0)) / 2);
+                const overduesSum = (row[59] || 0) + (row[60] || 0) + (row[62] || 0);
+                const overduesBadge = overduesSum > 0 ? `<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-400 font-bold">${overduesSum} Alerts</span>` : `<span class="text-slate-500">0</span>`;
+
+                tr.innerHTML = `
+                    <td class="p-3 text-slate-300 font-medium">${timestamp}</td>
+                    <td class="p-3 text-slate-300">${date}</td>
+                    <td class="p-3"><span class="px-2.5 py-1 rounded-lg bg-blue-950 text-blue-400 border border-blue-900/35 font-bold">${lobby}</span></td>
+                    <td class="p-3 text-center text-slate-300 font-mono">${elecTo}</td>
+                    <td class="p-3 text-center text-slate-300 font-mono">${dieselTo}</td>
+                    <td class="p-3 text-center text-slate-300 font-mono">${rhq}</td>
+                    <td class="p-3 text-center"><span class="font-bold text-teal-400 font-mono">${occRate}%</span> <span class="text-[10px] text-slate-500">(${occ}/${beds})</span></td>
+                    <td class="p-3 text-center">${breakdown}</td>
+                    <td class="p-3 text-center text-orange-400 font-bold font-mono">${avgPdd}m</td>
+                    <td class="p-3 text-center">${overduesBadge}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="inspectRowDetails(${index}); event.stopPropagation();" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 hover:text-white rounded-lg text-slate-400 transition-all font-semibold flex items-center gap-1 mx-auto text-[11px]">
+                            <i class="fa-solid fa-eye text-blue-400"></i> View All (64)
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('txtTableShowingCount').innerText = filteredSubmissionData.length;
+            document.getElementById('txtTableTotalCount').innerText = fullSubmissionData.length;
+        }
+
+        // Table Search Logic
+        function filterTableSearch() {
+            const query = document.getElementById('tableSearch').value.toLowerCase().trim();
+            const rows = document.getElementById('submissionsTableBody').querySelectorAll('tr');
+            let matched = 0;
+
+            rows.forEach(tr => {
+                const text = tr.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    tr.classList.remove('hidden');
+                    matched++;
+                } else {
+                    tr.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('txtTableShowingCount').innerText = query === '' ? filteredSubmissionData.length : matched;
+        }
+
+        // Row Modal toggle
+        function toggleRowModal(show) {
+            const modal = document.getElementById('rowDetailsModal');
+            const content = document.getElementById('rowDetailsContent');
+            if (show) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0', 'pointer-events-none');
+                    content.classList.remove('translate-x-full');
+                }, 10);
+            } else {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                content.classList.add('translate-x-full');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        // Inspect 64 Columns modal logic
+        function inspectRowDetails(index) {
+            inspectedRowIndex = index;
+            const row = filteredSubmissionData[index];
+            if (!row) return;
+
+            toggleRowModal(true);
+            switchInspectCategory('General');
+        }
+
+        // Switch categories inside details inspector modal
+        function switchInspectCategory(category) {
+            activeInspectCategory = category;
+            
+            // Toggle active subtab styles
+            document.querySelectorAll('.inspect-tab-btn').forEach(btn => {
+                btn.className = "inspect-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all";
+            });
+            document.getElementById('inspectTab' + category).className = "inspect-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white shadow";
+
+            // Render matching variables in the grid
+            const grid = document.getElementById('inspectPropertiesGrid');
+            grid.innerHTML = '';
+
+            const row = filteredSubmissionData[inspectedRowIndex];
+            const specs = COLUMN_SPECS.filter(s => s.category === category);
+
+            specs.forEach(spec => {
+                const rawValue = row[spec.col];
+                let formattedValue = rawValue === undefined || rawValue === "" ? "NIL" : rawValue;
+
+                // Build modern element cards for each property representing its form origin
+                const card = document.createElement('div');
+                card.className = "bg-slate-950 p-3.5 rounded-xl border border-slate-800 flex items-start gap-3 hover:border-slate-700 transition-all";
+
+                card.innerHTML = `
+                    <div class="p-2.5 bg-slate-900 rounded-lg text-blue-400 shrink-0 border border-slate-800">
+                        <i class="${spec.icon || 'fa-solid fa-cube'} text-sm"></i>
+                    </div>
+                    <div class="flex-1 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[9px] text-slate-500 uppercase tracking-widest font-mono font-semibold">Column ${spec.letter} (Header: ${spec.header})</span>
+                            <span class="text-[9px] bg-slate-900 px-1.5 py-0.5 rounded text-slate-400 font-mono">Index ${spec.col}</span>
+                        </div>
+                        <h5 class="text-xs font-semibold text-slate-300 leading-snug">${spec.label}</h5>
+                        <p class="text-sm font-bold text-white uppercase tracking-wide bg-slate-900/40 p-2 rounded-lg border border-slate-900 font-mono break-all mt-1.5">${formattedValue}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Export data directly as CSV (A to BL Column layout)
+        function exportToCSV() {
+            if (filteredSubmissionData.length === 0) {
+                showToast("No records available to export.", "error");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // Add Header Row
+            const headers = COLUMN_SPECS.map(s => s.header).join(",");
+            csvContent += headers + "\r\n";
+
+            // Add Data Rows
+            filteredSubmissionData.forEach(row => {
+                const rowStr = row.map(cell => {
+                    let cellVal = cell === undefined ? "" : String(cell);
+                    // escape quotes
+                    if (cellVal.includes(",") || cellVal.includes('"') || cellVal.includes("\n")) {
+                        cellVal = `"${cellVal.replace(/"/g, '""')}"`;
+                    }
+                    return cellVal;
+                }).join(",");
+                csvContent += rowStr + "\r\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Lobby_Operations_Report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast("Excel CSV Export completed successfully!", "success");
+        }
+
+        // Show toast notification
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+
+            msg.innerText = message;
+            
+            if (type === 'success') {
+                icon.className = "fa-solid fa-circle-check text-emerald-400 text-sm animate-bounce";
+                toast.className = "fixed bottom-5 right-5 bg-slate-900 border border-slate-800 text-xs px-4 py-3 rounded-2xl shadow-2xl z-50 flex items-center gap-2.5 transition-all duration-300 transform translate-y-0 opacity-100";
+            } else if (type === 'error') {
+                icon.className = "fa-solid fa-circle-xmark text-red-500 text-sm animate-shake";
+                toast.className = "fixed bottom-5 right-5 bg-slate-900 border border-slate-800 text-xs px-4 py-3 rounded-2xl shadow-2xl z-50 flex items-center gap-2.5 transition-all duration-300 transform translate-y-0 opacity-100";
+            } else {
+                icon.className = "fa-solid fa-circle-info text-blue-400 text-sm";
+                toast.className = "fixed bottom-5 right-5 bg-slate-900 border border-slate-800 text-xs px-4 py-3 rounded-2xl shadow-2xl z-50 flex items-center gap-2.5 transition-all duration-300 transform translate-y-0 opacity-100";
+            }
+
+            setTimeout(() => {
+                toast.className = "fixed bottom-5 right-5 bg-slate-900 border border-slate-800 text-xs px-4 py-3 rounded-2xl shadow-2xl z-50 flex items-center gap-2.5 transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none";
+            }, 3000);
+        }
+
+        // Toggle password visibility
+        function togglePasswordVisibility() {
+            const apiInput = document.getElementById('configApiKey');
+            const eye = document.getElementById('toggleEye');
+            if (apiInput.type === 'password') {
+                apiInput.type = 'text';
+                eye.className = "fa-solid fa-eye text-xs";
+            } else {
+                apiInput.type = 'password';
+                eye.className = "fa-solid fa-eye-slash text-xs";
+            }
+        }
+
+        // Render charts using Chart.js
+        function renderOperationalCharts() {
+            // Destroy existing instances to prevent overlays
+            if (trendChartInstance) trendChartInstance.destroy();
+            if (distributionChartInstance) distributionChartInstance.destroy();
+
+            // Prepare Trend Data (Line Chart) over past Dates
+            const dateMap = {};
+            filteredSubmissionData.forEach(row => {
+                const date = row[1]; // Column B
+                if (!dateMap[date]) {
+                    dateMap[date] = { elec: 0, diesel: 0, fois: 0 };
+                }
+                dateMap[date].elec += ((row[3] || 0) + (row[4] || 0));
+                dateMap[date].diesel += ((row[5] || 0) + (row[6] || 0));
+                dateMap[date].fois += ((row[12] || 0) + (row[13] || 0));
+            });
+
+            const sortedDates = Object.keys(dateMap).sort();
+            const elecSeries = sortedDates.map(d => dateMap[d].elec);
+            const dieselSeries = sortedDates.map(d => dateMap[d].diesel);
+            const foisSeries = sortedDates.map(d => dateMap[d].fois);
+
+            const ctxTrend = document.getElementById('chartTrainMovements').getContext('2d');
+            trendChartInstance = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: sortedDates.map(d => d.split('-').slice(1).join('/')), // MM/DD layout
+                    datasets: [
+                        {
+                            label: 'Electric Orderings',
+                            data: elecSeries,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2.5,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Diesel Orderings',
+                            data: dieselSeries,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.05)',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2.5,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'FOIS Total Generation',
+                            data: foisSeries,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2.5,
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } },
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: '#1e293b' },
+                            ticks: { color: '#64748b', font: { size: 9 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#64748b', font: { size: 9 } }
+                        }
+                    }
+                }
+            });
+
+            // Prepare Lobby distribution counts (Doughnut Chart)
+            const lobbyCountMap = {};
+            filteredSubmissionData.forEach(row => {
+                const lobby = row[2]; // Column C
+                lobbyCountMap[lobby] = (lobbyCountMap[lobby] || 0) + 1;
+            });
+
+            const lobbyLabels = Object.keys(lobbyCountMap);
+            const lobbyCounts = Object.values(lobbyCountMap);
+
+            const ctxDist = document.getElementById('chartLobbyDistribution').getContext('2d');
+            distributionChartInstance = new Chart(ctxDist, {
+                type: 'doughnut',
+                data: {
+                    labels: lobbyLabels,
+                    datasets: [{
+                        data: lobbyCounts,
+                        backgroundColor: [
+                            '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6',
+                            '#14b8a6', '#6366f1', '#f43f5e', '#a855f7', '#06b6d4', '#eab308'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#0f172a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: '#94a3b8',
+                                font: { size: 9, weight: 'bold' },
+                                boxWidth: 10
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+    </script>
+</body>
+</html>

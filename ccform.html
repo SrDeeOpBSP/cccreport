@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Railway Operations & Crew Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom scrollbars for a clean, modern feel */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Premium shadow effects and scaling animations */
+        .card-shadow {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-shadow:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+        }
+        input, select, textarea {
+            transition: all 0.2s ease-in-out;
+        }
+        input:focus, select:focus, textarea:focus {
+            transform: translateY(-1px);
+        }
+        
+        /* Spinner used for active form submissions */
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid currentColor;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-blue-600 selection:text-white bg-slate-50/50">
+
+    <!-- TOP GLOBAL HEADER BAR -->
+    <header class="bg-slate-900 text-white shadow-xl border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md bg-opacity-95">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2.5 rounded-xl shadow-inner shadow-blue-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                        RAILWAY OPERATIONS & CREW CONSOLE
+                        <span class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Active</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium">Lobby Daily Operations & Crew Position (08:00 Hrs Reporting)</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3 flex-wrap">
+                <!-- Live clock indicator -->
+                <div id="liveClock" class="hidden sm:flex items-center gap-2 text-slate-400 text-xs font-semibold bg-slate-800 px-3.5 py-2 rounded-lg border border-slate-700/60 code-font">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>--:--:--</span>
+                </div>
+                <!-- Autosave real-time Indicator -->
+                <div class="flex items-center gap-2 text-xs font-semibold bg-slate-800/80 text-slate-300 px-3.5 py-2 rounded-lg border border-slate-700/60">
+                    <span class="relative flex h-2 w-2">
+                        <span id="autosavePulse" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span id="autosaveDot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span id="autosaveStatus">Autosave Active</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONSOLE LAYOUT -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- LEFT CONTROL PANEL: STATS, RECALLS & SAVED DRAFTS -->
+            <aside class="lg:col-span-4 space-y-6 lg:sticky lg:top-24 order-2 lg:order-1">
+                
+                <!-- LIVE STATS SUMMARY -->
+                <section class="bg-slate-900 text-white rounded-2xl shadow-xl border border-slate-800 p-5 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-400 tracking-wider uppercase flex items-center justify-between">
+                        Live Metrics Summary
+                        <span class="text-[10px] text-blue-400 bg-blue-900/40 border border-blue-800 px-2 py-0.5 rounded font-mono">Dynamic</span>
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/40">
+                            <span class="text-xs text-slate-400 block mb-1">Total Train Orders</span>
+                            <span id="statTotalTO" class="text-2xl font-extrabold text-white tracking-tight code-font">0</span>
+                        </div>
+                        <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/40">
+                            <span class="text-xs text-slate-400 block mb-1">Total Balancing PT</span>
+                            <span id="statTotalPT" class="text-2xl font-extrabold text-indigo-300 tracking-tight code-font">0</span>
+                        </div>
+                        <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/40 col-span-2">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-xs text-slate-400">Running Room Occupancy</span>
+                                <span id="statOccPercentage" class="text-xs font-bold text-teal-400 code-font">0%</span>
+                            </div>
+                            <!-- Styled dynamic progress bar -->
+                            <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                                <div id="statOccBar" class="bg-gradient-to-r from-teal-500 to-emerald-400 h-full w-0 transition-all duration-500"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- RECALL LAST SUCCESSFUL SUBMISSION MODULE -->
+                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-100 px-5 py-3.5 border-b border-slate-200 flex justify-between items-center">
+                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18"></path></svg>
+                            Recall Last Submission
+                        </h2>
+                    </div>
+                    <div class="p-5 space-y-4">
+                        <p class="text-xs text-slate-500 leading-relaxed">Made a mistake in your last sent report? Quickly recall the submitted data to make corrections and resubmit immediately.</p>
+                        
+                        <div id="recallContainer">
+                            <!-- Populated dynamically via JS -->
+                            <p class="text-xs text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-lg">No previous submission found.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- DRAFTS WORKSPACE -->
+                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-100 px-5 py-3.5 border-b border-slate-200 flex justify-between items-center">
+                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l2.414-2.414a1 1 0 01.707-.293H20"></path></svg>
+                            Lobby Cloud Workspace
+                        </h2>
+                        <span id="draftCountBadge" class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full">0</span>
+                    </div>
+                    <div class="p-5 space-y-4">
+                        <p class="text-xs text-slate-500 leading-relaxed">Save drafts directly to Google Sheets. You can retrieve them instantly across all terminal PCs connected to this lobby.</p>
+                        
+                        <div class="flex gap-2">
+                            <button type="button" onclick="triggerSaveDraftFlow()" class="flex-1 py-2.5 px-3 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-lg hover:bg-indigo-100 border border-indigo-200 transition-all flex items-center justify-center gap-1.5 shadow-sm active:translate-y-0.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                                Save/Update Cloud Draft
+                            </button>
+                        </div>
+
+                        <!-- Available draft lists -->
+                        <div class="border-t border-slate-100 pt-3">
+                            <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Cloud Versions for selected Lobby</h4>
+                            <div id="draftsListContainer" class="space-y-2 max-h-[190px] overflow-y-auto pr-1">
+                                <p class="text-xs text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-lg">Please select a Lobby to sync drafts.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION TRACKER INDEX -->
+                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hidden lg:block">
+                    <div class="bg-slate-100 px-5 py-3 border-b border-slate-200">
+                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Console Section Index</h2>
+                    </div>
+                    <nav class="p-4 space-y-1 text-sm font-medium">
+                        <a href="#gen-info-sec" class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors">
+                            <span class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                General Information
+                            </span>
+                            <span class="text-xs text-slate-400 code-font">08:00 Hrs</span>
+                        </a>
+                        <a href="#train-order-sec" class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors">
+                            <span class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                                1. Train Ordering (TO)
+                            </span>
+                            <span id="badgeTOCount" class="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-600 code-font">0</span>
+                        </a>
+                        <a href="#pt-sec" class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors">
+                            <span class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                                2. Section PT/Balancing
+                            </span>
+                            <span id="badgePTCount" class="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-600 code-font">0</span>
+                        </a>
+                        <a href="#resources-sec" class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors">
+                            <span class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-teal-600"></span>
+                                3. Crew & Resources
+                            </span>
+                            <span class="text-xs text-emerald-500 font-bold">Active</span>
+                        </a>
+                        <a href="#performance-sec" class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors">
+                            <span class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-orange-600"></span>
+                                4. Lobby Performance
+                            </span>
+                            <span class="text-xs text-orange-500 font-bold">PDD Tracker</span>
+                        </a>
+                        <a href="#counselling-sec" class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors">
+                            <span class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                                5. Counselling & Audits
+                            </span>
+                            <span class="text-xs text-rose-500 font-bold">Overdues</span>
+                        </a>
+                    </nav>
+                </section>
+            </aside>
+
+            <!-- RIGHT SECTION: PRODUCTION DATA SHEETS -->
+            <div class="lg:col-span-8 order-1 lg:order-2">
+                
+                <!-- ACTIVE DRAFT BANNER -->
+                <div id="activeDraftBanner" class="hidden bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center justify-between mb-6 shadow-sm animate-pulse">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-blue-600 text-white p-2 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-800">Draft Mode Active</p>
+                            <p class="text-xs text-slate-500">Working on Cloud Draft: <span id="activeDraftName" class="font-bold text-blue-700">None</span>. (This draft will auto-delete upon submission)</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="unloadActiveDraft()" class="text-xs bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                        Unload Draft
+                    </button>
+                </div>
+
+                <!-- OVERWRITE MODE WARNING BANNER -->
+                <div id="overwriteModeBanner" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center justify-between mb-6 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="text-amber-600 p-2 bg-amber-100 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-800">Direct Overwrite Mode Active</p>
+                            <p class="text-xs text-slate-500">You are editing a recalled submission. Submitting now will overwrite <span class="font-bold text-amber-700 font-mono">Row #<span id="overwriteRowDisplay">0</span></span> directly in Google Sheets.</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="cancelOverwriteMode()" class="text-xs bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                        Cancel Edit Mode
+                    </button>
+                </div>
+
+                <form id="operationsForm" name="google-sheet" class="space-y-8">
+                    <!-- Hidden fields to guide Apps Script overwriting and atomic draft deletions -->
+                    <input type="hidden" name="rowNumber" id="rowNumber" value="">
+                    <input type="hidden" name="draftId" id="activeDraftIdField" value="">
+                    
+                    <!-- BASELINE GENERAL CONTROL INFO -->
+                    <section id="gen-info-sec" class="scroll-mt-24 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-shadow">
+                        <div class="bg-slate-900 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                            <h2 class="text-sm font-extrabold text-white tracking-wider flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                BASELINE CONTROL INFORMATION
+                            </h2>
+                            <span class="text-[11px] bg-slate-800 text-slate-300 font-mono px-2.5 py-0.5 rounded border border-slate-700">Lobby Config</span>
+                        </div>
+                        <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="reportDate" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Report Date</label>
+                                <input type="date" id="reportDate" name="Date" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white outline-none text-slate-700 font-medium">
+                            </div>
+                            <div class="relative">
+                                <label for="lobbySelect" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select Lobby</label>
+                                <select id="lobbySelect" name="Lobby" required onchange="loadLobbyDrafts()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white outline-none text-slate-700 appearance-none cursor-pointer font-medium">
+                                    <option value="" disabled selected>-- Choose Lobby --</option>
+                                    <option value="AKT">AKT</option>
+                                    <option value="BJRI">BJRI</option>
+                                    <option value="BRJN">BRJN</option>
+                                    <option value="BSP">BSP</option>
+                                    <option value="KHS">KHS</option>
+                                    <option value="KRBA">KRBA</option>
+                                    <option value="PND">PND</option>
+                                    <option value="RIG">RIG</option>
+                                    <option value="SDL">SDL</option>
+                                    <option value="SJQ">SJQ</option>
+                                    <option value="USL">USL</option>
+                                </select>
+                                <div class="pointer-events-none absolute right-3 bottom-3 flex items-center px-1 text-slate-400">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 1: TRAIN ORDERING (TO’S PARTICULARS) -->
+                    <section id="train-order-sec" class="scroll-mt-24 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-shadow">
+                        <div class="bg-blue-900 px-6 py-4 border-b border-blue-950 flex items-center justify-between flex-wrap gap-2">
+                            <h2 class="text-sm font-extrabold text-white tracking-wider flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                                1. TRAIN ORDERING (TO’S PARTICULARS)
+                            </h2>
+                            <button type="button" onclick="zeroFillSection('train-order-sec')" class="text-xs bg-blue-800/60 hover:bg-blue-800 text-blue-200 border border-blue-700/60 px-2.5 py-1 rounded-lg transition-colors font-medium">Reset Section to 0</button>
+                        </div>
+                        <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Electric TO (UP Dir.)</label>
+                                <input type="number" name="TO Elec UP" value="0" min="0" class="metric-input w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Electric TO (DN Dir.)</label>
+                                <input type="number" name="TO Elec DN" value="0" min="0" class="metric-input w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Diesel TO (UP Dir.)</label>
+                                <input type="number" name="TO Diesel UP" value="0" min="0" class="metric-input w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Diesel TO (DN Dir.)</label>
+                                <input type="number" name="TO Diesel DN" value="0" min="0" class="metric-input w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Total Shuttling TO</label>
+                                <input type="number" name="TO Shuttling" value="0" min="0" class="metric-input w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-indigo-700 mb-1.5">6. Total RHQ TO</label>
+                                <input type="number" name="TO RHQ" id="totalRhq" value="0" min="0" class="metric-input w-full px-4 py-2 bg-indigo-50/50 border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-indigo-900 font-extrabold">
+                            </div>
+                            <div class="col-span-1 md:col-span-2 lg:col-span-3">
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">7. Detailed RHQ TO Distribution (Required if Total > 0)</label>
+                                <input type="text" name="RHQ Detail" placeholder="e.g. BSP-20, KRBA-30" class="format-uppercase w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium text-slate-700">
+                                <span class="text-[10px] text-slate-400 mt-1 block">Format: UPPERCASE lobby codes with hyphens, separated by commas. Sum must match Total RHQ TO.</span>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">RTO / Putback (UP Dir.)</label>
+                                <input type="number" name="RTO UP" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">RTO / Putback (DN Dir.)</label>
+                                <input type="number" name="RTO DN" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">FOIS Gen. TO – Electric</label>
+                                <input type="number" name="FOIS Elec" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">FOIS Gen. TO – Diesel</label>
+                                <input type="number" name="FOIS Diesel" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">TKE Cases in UP Dir.</label>
+                                <input type="number" name="TKE UP" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">TKE Cases in DN Dir.</label>
+                                <input type="number" name="TKE DN" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-medium">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 2: SECTION PT/BALANCING PARTICULARS -->
+                    <section id="pt-sec" class="scroll-mt-24 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-shadow">
+                        <div class="bg-indigo-900 px-6 py-4 border-b border-indigo-950 flex items-center justify-between flex-wrap gap-2">
+                            <h2 class="text-sm font-extrabold text-white tracking-wider flex items-center gap-2">
+                                <svg class="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                                2. SECTION PT / BALANCING PARTICULARS
+                            </h2>
+                            <button type="button" onclick="zeroFillSection('pt-sec')" class="text-xs bg-indigo-800/60 hover:bg-indigo-800 text-indigo-200 border border-indigo-750/60 px-2.5 py-1 rounded-lg transition-colors font-medium">Reset Section to 0</button>
+                        </div>
+                        <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Section PT/Balancing in UP</label>
+                                <input type="number" name="PT UP" value="0" min="0" class="pt-input w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Section PT/Balancing in DN</label>
+                                <input type="number" name="PT DN" value="0" min="0" class="pt-input w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Incoming PT by Jeep</label>
+                                <input type="number" name="PT In Jeep" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Incoming PT by Train</label>
+                                <input type="number" name="PT In Train" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Outgoing PT by Jeep</label>
+                                <input type="number" name="PT Out Jeep" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Outgoing PT by Train</label>
+                                <input type="number" name="PT Out Train" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 3: CREW & RESOURCES UTILIZATION -->
+                    <section id="resources-sec" class="scroll-mt-24 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-shadow">
+                        <div class="bg-teal-800 px-6 py-4 border-b border-teal-900 flex items-center justify-between flex-wrap gap-2">
+                            <h2 class="text-sm font-extrabold text-white tracking-wider flex items-center gap-2">
+                                <svg class="w-5 h-5 text-teal-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                3. CREW & RESOURCES UTILIZATION
+                            </h2>
+                            <button type="button" onclick="zeroFillSection('resources-sec')" class="text-xs bg-teal-700/60 hover:bg-teal-700 text-teal-200 border border-teal-650/60 px-2.5 py-1 rounded-lg transition-colors font-medium">Reset Section to 0</button>
+                        </div>
+                        <div class="p-4 sm:p-6 space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Electric HQ Crew Utilized</label>
+                                    <input type="number" name="Crew HQ Elec" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Diesel HQ Crew Utilized</label>
+                                    <input type="number" name="Crew HQ Diesel" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-teal-800 mb-1.5">3. Electric OS Crew Utilized</label>
+                                    <input type="number" name="Crew OS Elec" value="0" min="0" class="w-full px-4 py-2 bg-teal-50/50 border border-teal-250 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-extrabold text-teal-900">
+                                </div>
+                                <div class="col-span-1 md:col-span-2 lg:col-span-3">
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">4. Electric OS Crew Utilization Detail (Required if Total > 0)</label>
+                                    <input type="text" name="Crew OS Elec Detail" placeholder="e.g. KRBA-23, BSP-19" class="format-uppercase w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-medium">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-xs font-bold text-teal-850 mb-1.5">5. Diesel OS Crew Utilized</label>
+                                    <input type="number" name="Crew OS Diesel" value="0" min="0" class="w-full px-4 py-2 bg-teal-50/50 border border-teal-250 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-extrabold text-teal-900">
+                                </div>
+                                <div class="col-span-1 md:col-span-2">
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">6. Diesel OS Crew Utilization Detail (Required if Total > 0)</label>
+                                    <input type="text" name="Crew OS Diesel Detail" placeholder="e.g. KRBA-23, BSP-19" class="format-uppercase w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-medium">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">7. Beds in Running Room</label>
+                                    <input type="number" name="Beds RR" id="bedsRR" value="1" min="1" class="rr-calc w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-teal-850 mb-1.5">8. Occupancy in Running Room</label>
+                                    <input type="number" name="Occ RR" id="occRR" value="0" min="0" class="rr-calc w-full px-4 py-2 bg-teal-50/50 border border-teal-250 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-extrabold text-teal-900">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">9. Total Jeep Available</label>
+                                    <input type="number" name="Jeep Total" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">10. Total Jeep Breakdown</label>
+                                    <input type="number" name="Jeep Breakdown" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-medium">
+                                </div>
+                                <div class="col-span-1 md:col-span-1">
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">11. Reason for Breakdown</label>
+                                    <input type="text" name="Jeep Breakdown Reason" value="NIL" placeholder="Enter reason..." class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">12. FSD Taken by ALP</label>
+                                    <input type="number" name="FSD ALP" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">13. FSD Not Taken by ALP</label>
+                                    <input type="number" name="FSD Not ALP" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-medium">
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 4: LOBBY PERFORMANCE PARTICULARS -->
+                    <section id="performance-sec" class="scroll-mt-24 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-shadow">
+                        <div class="bg-orange-800 px-6 py-4 border-b border-orange-900 flex items-center justify-between flex-wrap gap-2">
+                            <h2 class="text-sm font-extrabold text-white tracking-wider flex items-center gap-2">
+                                <svg class="w-5 h-5 text-orange-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                                4. LOBBY PERFORMANCE PARTICULARS
+                            </h2>
+                            <button type="button" onclick="zeroFillSection('performance-sec')" class="text-xs bg-orange-700/60 hover:bg-orange-700 text-orange-200 border border-orange-650/60 px-2.5 py-1 rounded-lg transition-colors font-medium">Reset Section to 0</button>
+                        </div>
+                        <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">PDD (Mins) in UP Dir.</label>
+                                <input type="number" name="PDD UP" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">PDD (Mins) in DN Dir.</label>
+                                <input type="number" name="PDD DN" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">PDD >2 hrs in UP Dir. (Count)</label>
+                                <input type="number" name="UP PDD >2 Hrs" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">PDD >2 hrs in DN Dir. (Count)</label>
+                                <input type="number" name="DN PDD >2 Hrs" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">SOSO Above 12 hrs.</label>
+                                <input type="number" name="SOSO 12" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">SOSO Above 14 hrs.</label>
+                                <input type="number" name="SOSO 14" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">SOWS Above 12 hrs.</label>
+                                <input type="number" name="SOWS 12" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">SOWS Above 14 hrs.</label>
+                                <input type="number" name="SOWS 14" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Total Number of WOR.</label>
+                                <input type="number" name="TOTAL WOR" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Manual Sign On (Count)</label>
+                                <input type="number" name="Manual SignOn" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none font-medium">
+                            </div>
+                            <div class="col-span-1 md:col-span-2">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Reason For Manual Sign On</label>
+                                <input type="text" name="Manual SignOn Reason" value="NIL" placeholder="Enter reason..." class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Manual Sign Off (Count)</label>
+                                <input type="number" name="Manual SignOff" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none font-medium">
+                            </div>
+                            <div class="col-span-1 md:col-span-2">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Reason For Manual Sign Off</label>
+                                <input type="text" name="Manual SignOff Reason" value="NIL" placeholder="Enter reason..." class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none font-medium">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 5: CREW COUNSELLING & OTHER ACTIVITIES -->
+                    <section id="counselling-sec" class="scroll-mt-24 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-shadow">
+                        <div class="bg-rose-800 px-6 py-4 border-b border-rose-900 flex items-center justify-between flex-wrap gap-2">
+                            <h2 class="text-sm font-extrabold text-white tracking-wider flex items-center gap-2">
+                                <svg class="w-5 h-5 text-rose-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                5. CREW COUNSELLING & OTHER ACTIVITIES
+                            </h2>
+                            <button type="button" onclick="zeroFillSection('counselling-sec')" class="text-xs bg-rose-700/60 hover:bg-rose-700 text-rose-200 border border-rose-650/60 px-2.5 py-1 rounded-lg transition-colors font-medium">Reset Section to 0</button>
+                        </div>
+                        <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">RS Valve Op. ALPs (Lobby)</label>
+                                <input type="number" name="RS Valve Lobby" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">RS Valve Op. ALPs (Loco/CTO)</label>
+                                <input type="number" name="RS Valve Loco" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Mass Counselling Sessions</label>
+                                <input type="number" name="Mass Couns Sessions" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Mass Counselling CLI's Attended</label>
+                                <input type="number" name="Mass Couns CLI" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Mass Counselling LP's Attended</label>
+                                <input type="number" name="Mass Couns LP" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Mass Counselling LPS's Attended</label>
+                                <input type="number" name="Mass Couns LPS" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Mass Counselling ALP's Attended</label>
+                                <input type="number" name="Mass Couns ALP" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Auto Signal Competency Overdue</label>
+                                <input type="number" name="Auto Signal Overdue" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Total Number of CRC Overdue</label>
+                                <input type="number" name="CRC Overdue" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none font-medium">
+                            </div>
+                            <div class="col-span-1 md:col-span-2 lg:col-span-1">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Reason For CRC Overdue</label>
+                                <input type="text" name="Reason CRC Overdue" value="NIL" placeholder="Reason" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Total Number of PME Overdue</label>
+                                <input type="number" name="PME Overdue" value="0" min="0" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none font-medium">
+                            </div>
+                            <div class="col-span-1 md:col-span-2 lg:col-span-1">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Reason For PME Overdue</label>
+                                <input type="text" name="Reason PME Overdue" value="NIL" placeholder="Reason" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none font-medium">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ACTION BUTTONS SYSTEM -->
+                    <div class="flex flex-col sm:flex-row justify-end items-center gap-3 pt-6 pb-16">
+                        <div class="grid grid-cols-2 gap-3 w-full sm:w-auto">
+                            <button type="reset" onclick="clearRowNumber()" class="px-4 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 transition-all text-xs sm:text-sm">
+                                Clear Form
+                            </button>
+                            <button type="button" onclick="triggerSaveDraftFlow()" class="px-4 py-3 bg-slate-800 text-slate-200 rounded-xl font-semibold shadow-md hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 transition-all text-xs sm:text-sm flex items-center justify-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                                Save Draft
+                            </button>
+                        </div>
+                        <button type="submit" id="submitBtn" class="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-xs sm:text-sm flex items-center justify-center">
+                            Submit Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- SAVE DRAFT PROMPT MODAL -->
+    <div id="draftNameModal" class="fixed inset-0 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm z-[100] opacity-0 pointer-events-none transition-opacity duration-300 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full transform scale-95 transition-transform duration-300" id="draftNameContent">
+            <h3 class="text-base font-bold text-slate-800 mb-1">Save Draft Version</h3>
+            <p class="text-xs text-slate-500 mb-4">Give your draft an identifiable name to retrieve later.</p>
+            <input type="text" id="draftNameInput" placeholder="e.g., Morning Shift SDL" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white outline-none text-slate-700 font-medium text-sm mb-4">
+            <div class="flex gap-2.5">
+                <button type="button" onclick="closeModal('draftNameModal')" class="flex-1 py-2.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-200 transition-colors">
+                    Cancel
+                </button>
+                <button type="button" onclick="confirmSaveDraft()" class="flex-1 py-2.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                    Save Draft
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION TOAST SYSTEM -->
+    <div id="toastNotification" class="fixed bottom-6 right-6 transform translate-y-12 opacity-0 pointer-events-none bg-slate-900 text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-800 transition-all duration-300 z-50">
+        <div id="toastIcon" class="p-1 rounded-full bg-emerald-500/20 text-emerald-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+        </div>
+        <div>
+            <p id="toastMessage" class="text-xs font-semibold">Action Completed Successfully</p>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div id="successModal" class="fixed inset-0 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm z-[100] opacity-0 pointer-events-none transition-opacity duration-300 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full transform scale-95 transition-transform duration-300" id="modalContent">
+            <div class="flex items-center justify-center w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full mx-auto mb-4 border border-emerald-200">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="text-lg font-extrabold text-center text-slate-850 mb-2">Report Submitted Successfully!</h3>
+            <p class="text-center text-xs text-slate-500 mb-6 leading-relaxed">Your data has been submitted successfully to Google Sheets.</p>
+            <button onclick="closeModal('successModal')" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 text-sm">
+                Acknowledge & Close
+            </button>
+        </div>
+    </div>
+
+    <!-- ERROR & VALIDATION MODAL -->
+    <div id="errorModal" class="fixed inset-0 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm z-[100] opacity-0 pointer-events-none transition-opacity duration-300 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full transform scale-95 transition-transform duration-300" id="errorModalContent">
+            <div class="flex items-center justify-center w-12 h-12 bg-red-100 text-red-600 rounded-full mx-auto mb-3 border border-red-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h3 class="text-base font-extrabold text-center text-slate-850 mb-1">Please Check Inputs</h3>
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 max-h-[220px] overflow-y-auto mb-5">
+                <p class="text-xs text-slate-600 leading-relaxed" id="errorMessage">There is an error with the detailed data format inside your form. Please recheck and submit.</p>
+            </div>
+            <button onclick="closeModal('errorModal')" class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors text-sm">
+                Correct Inputs
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Set this to your published Google Apps Script Web App URL
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwqD7VylJukzt9Jo4SPe67RRTbf8oVdgyXrvF_8sQLFbTPVrEEOzeLHRM54-TDeTWw/exec';
+
+        // Core variables and state management
+        const form = document.getElementById('operationsForm');
+        const submitBtn = document.getElementById('submitBtn');
+        let activeDraftId = null; // Currently selected cloud draft ID
+        let currentDrafts = [];   // Real-time drafts populated from the Google Sheet backend
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup Default Date to Today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reportDate').value = today;
+
+            // Inputs to automatically uppercase format listener
+            document.querySelectorAll('.format-uppercase').forEach(input => {
+                input.addEventListener('input', function() {
+                    this.value = this.value.toUpperCase();
+                });
+            });
+
+            // Live clock process setup
+            setInterval(updateClock, 1000);
+            updateClock();
+
+            // Live counters recalculation triggers
+            document.querySelectorAll('.metric-input').forEach(input => {
+                input.addEventListener('input', calculateLiveTrainOrders);
+            });
+            document.querySelectorAll('.pt-input').forEach(input => {
+                input.addEventListener('input', calculateLiveBalancingPT);
+            });
+            document.querySelectorAll('.rr-calc').forEach(input => {
+                input.addEventListener('input', calculateLiveRROccupancy);
+            });
+
+            // Perform initial calculations
+            calculateLiveTrainOrders();
+            calculateLiveBalancingPT();
+            calculateLiveRROccupancy();
+
+            // Initialize Recall Last Submission widget
+            renderRecallWidget();
+
+            // Autosave system loop (occurs locally every 10 seconds to protect crashes)
+            setInterval(triggerAutosave, 10000);
+            
+            // Restore last unsaved auto-saved backup if exists on startup
+            loadAutosavedSessionOnStart();
+        });
+
+        // Live clock logic
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            const dateStr = now.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+            const clockEl = document.getElementById('liveClock');
+            if (clockEl) {
+                clockEl.querySelector('span').innerText = `${dateStr} | ${timeStr}`;
+            }
+        }
+
+        // Live calculations for Train Orders total sum
+        function calculateLiveTrainOrders() {
+            const inputs = ['TO Elec UP', 'TO Elec DN', 'TO Diesel UP', 'TO Diesel DN', 'TO Shuttling', 'TO RHQ'];
+            let total = 0;
+            inputs.forEach(name => {
+                const el = document.querySelector(`input[name="${name}"]`);
+                if (el) {
+                    total += parseInt(el.value) || 0;
+                }
+            });
+            document.getElementById('statTotalTO').innerText = total;
+            document.getElementById('badgeTOCount').innerText = total;
+        }
+
+        // Live calculations for PT Balancing
+        function calculateLiveBalancingPT() {
+            const upPT = parseInt(document.querySelector('input[name="PT UP"]')?.value) || 0;
+            const dnPT = parseInt(document.querySelector('input[name="PT DN"]')?.value) || 0;
+            const total = upPT + dnPT;
+            document.getElementById('statTotalPT').innerText = total;
+            document.getElementById('badgePTCount').innerText = total;
+        }
+
+        // Live Occupancy Gauge ratio
+        function calculateLiveRROccupancy() {
+            const beds = parseInt(document.getElementById('bedsRR').value) || 1;
+            const occ = parseInt(document.getElementById('occRR').value) || 0;
+            
+            const percentage = Math.min(100, Math.max(0, Math.round((occ / beds) * 100)));
+            document.getElementById('statOccPercentage').innerText = `${percentage}%`;
+            
+            const bar = document.getElementById('statOccBar');
+            bar.style.width = `${percentage}%`;
+            
+            // Dynamic Color bar changes
+            if (percentage > 90) {
+                bar.className = 'bg-gradient-to-r from-rose-500 to-red-400 h-full transition-all duration-500';
+            } else if (percentage > 70) {
+                bar.className = 'bg-gradient-to-r from-amber-500 to-orange-400 h-full transition-all duration-500';
+            } else {
+                bar.className = 'bg-gradient-to-r from-teal-500 to-emerald-400 h-full transition-all duration-500';
+            }
+        }
+
+        // Quick helper: Set all numerical values to 0 within a form section
+        function zeroFillSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            const inputs = section.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => {
+                if (input.id !== 'bedsRR') { // Baseline bed capacity shouldn't be zeroed
+                    input.value = "0";
+                }
+            });
+            calculateLiveTrainOrders();
+            calculateLiveBalancingPT();
+            calculateLiveRROccupancy();
+            showToast("Inputs in this section have been reset to 0.", true);
+        }
+
+        // Premium Toast Alerts
+        function showToast(message, isSuccess = true) {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = message;
+            
+            if (isSuccess) {
+                toastIcon.className = 'p-1 rounded-full bg-emerald-500/20 text-emerald-400';
+                toastIcon.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>`;
+            } else {
+                toastIcon.className = 'p-1 rounded-full bg-amber-500/20 text-amber-400';
+                toastIcon.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01"></path></svg>`;
+            }
+
+            toast.classList.remove('translate-y-12', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-12', 'opacity-0', 'pointer-events-none');
+            }, 3500);
+        }
+
+        // Fetch active layout state values
+        function getFormState() {
+            const data = {};
+            const elements = form.querySelectorAll('input, select');
+            elements.forEach(el => {
+                if (el.name && el.name !== 'rowNumber' && el.name !== 'draftId') {
+                    data[el.name] = el.value;
+                }
+            });
+            return data;
+        }
+
+        // Apply a raw data state to form inputs
+        function loadFormState(state) {
+            if (!state) return;
+            Object.keys(state).forEach(key => {
+                const el = form.querySelector(`[name="${key}"]`);
+                if (el) {
+                    el.value = state[key];
+                }
+            });
+            calculateLiveTrainOrders();
+            calculateLiveBalancingPT();
+            calculateLiveRROccupancy();
+            document.querySelectorAll('.format-uppercase').forEach(input => {
+                input.value = input.value.toUpperCase();
+            });
+        }
+
+        // Fetch Cloud Drafts Lobby-Wise on Dropdown Change
+        function loadLobbyDrafts() {
+            const lobby = document.getElementById('lobbySelect').value;
+            if (!lobby) return;
+
+            // If an active draft from a different lobby is loaded, unload it to prevent crossover
+            if (activeDraftId) {
+                const matched = currentDrafts.find(d => d.id === activeDraftId);
+                if (matched && matched.lobby !== lobby) {
+                    activeDraftId = null;
+                    document.getElementById('activeDraftIdField').value = '';
+                    updateDraftBanner();
+                }
+            }
+
+            const container = document.getElementById('draftsListContainer');
+            container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-lg"><span class="spinner mr-2 text-blue-600"></span>Syncing Lobby Workspace...</p>`;
+
+            fetch(scriptURL, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: 'getDrafts',
+                    Lobby: lobby
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                currentDrafts = data;
+                renderDraftList();
+            })
+            .catch(err => {
+                console.error(err);
+                container.innerHTML = `<p class="text-xs text-rose-500 italic text-center py-4 bg-rose-50 rounded-lg">Sync failed. Verify Script URL.</p>`;
+            });
+        }
+
+        // Save or update current form state as draft
+        function triggerSaveDraftFlow() {
+            const lobby = document.getElementById('lobbySelect').value;
+            if (!lobby) {
+                showToast("Please select a Lobby first before saving a draft.", false);
+                return;
+            }
+            
+            const timeStr = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            let suggestedName = `${lobby} Shift (${timeStr})`;
+            
+            // Prepopulate with currently active draft name if we are editing
+            if (activeDraftId) {
+                const matched = currentDrafts.find(d => d.id === activeDraftId);
+                if (matched) {
+                    suggestedName = matched.name;
+                }
+            }
+
+            document.getElementById('draftNameInput').value = suggestedName;
+            showModal('draftNameModal');
+        }
+
+        function confirmSaveDraft() {
+            const draftName = document.getElementById('draftNameInput').value.trim() || 'Quick Draft';
+            const formData = getFormState();
+            
+            // CRITICAL: Reuse draft ID if in draft mode so PC2 updates PC1's row rather than duplicating it!
+            const draftId = activeDraftId || 'draft_' + Date.now();
+
+            const saveBtn = document.querySelector('#draftNameModal button:last-child');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner mr-1.5"></span> Saving...';
+
+            fetch(scriptURL, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: 'saveDraft',
+                    draftId: draftId,
+                    draftName: draftName,
+                    Lobby: formData.Lobby || '',
+                    jsonData: JSON.stringify(formData)
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Save Draft';
+
+                if (data.result === 'success') {
+                    closeModal('draftNameModal');
+                    showToast(`✓ Draft "${draftName}" saved to cloud successfully`);
+                    
+                    // Put form into active draft state
+                    activeDraftId = draftId;
+                    document.getElementById('activeDraftIdField').value = draftId;
+                    updateDraftBanner(draftName);
+                    
+                    loadLobbyDrafts(); // Refresh workspace
+                } else {
+                    showToast('Draft save failed.', false);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Save Draft';
+                showToast('Draft save failed.', false);
+            });
+        }
+
+        // Dynamic Draft List Renderer (Reflects Cloud Synced currentDrafts)
+        function renderDraftList() {
+            const container = document.getElementById('draftsListContainer');
+            const badge = document.getElementById('draftCountBadge');
+
+            badge.innerText = currentDrafts.length;
+
+            if (currentDrafts.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-lg">No active cloud drafts for this lobby.</p>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            // Render reverse chronologically (latest draft on top)
+            currentDrafts.slice().reverse().forEach(draft => {
+                const isActive = draft.id === activeDraftId;
+                const item = document.createElement('div');
+                
+                item.className = `p-3 border rounded-xl flex items-center justify-between gap-2 hover:bg-slate-100 transition-all cursor-pointer group ${isActive ? 'bg-blue-50/70 border-blue-400 shadow-sm ring-1 ring-blue-400' : 'bg-slate-50 border-slate-200'}`;
+                
+                item.innerHTML = `
+                    <div class="min-w-0 flex-1" onclick="loadDraftVersion('${draft.id}')">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-bold text-slate-700 block truncate" title="${draft.name}">${draft.name}</span>
+                            ${isActive ? '<span class="text-[9px] bg-blue-600 text-white font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">Loaded</span>' : ''}
+                        </div>
+                        <span class="text-[10px] text-slate-400 block font-mono mt-0.5">${draft.time}</span>
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button type="button" onclick="deleteDraftVersion('${draft.id}', event)" class="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Delete Draft">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Apply selected cloud version to local form inputs
+        function loadDraftVersion(id) {
+            const matched = currentDrafts.find(d => d.id === id);
+            if (!matched) {
+                showToast("Draft not found", false);
+                return;
+            }
+
+            const formData = JSON.parse(matched.jsonData);
+            loadFormState(formData);
+
+            activeDraftId = id;
+            document.getElementById('activeDraftIdField').value = id;
+            updateDraftBanner(matched.name);
+
+            showToast(`Draft "${matched.name}" successfully loaded to form`);
+            renderDraftList();
+        }
+
+        // Deletes draft row from the Google Sheet
+        function deleteDraftVersion(id, event) {
+            if (event) event.stopPropagation(); // Avoid triggering card load function
+            
+            const lobby = document.getElementById('lobbySelect').value;
+            if (!lobby) return;
+
+            if (!confirm("Are you sure you want to delete this draft from the cloud?")) {
+                return;
+            }
+
+            fetch(scriptURL, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: 'deleteDraft',
+                    draftId: id
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.result === 'success') {
+                    showToast('Draft deleted from cloud.');
+                    
+                    // If the deleted draft was currently being edited, clear draft status
+                    if (activeDraftId === id) {
+                        activeDraftId = null;
+                        document.getElementById('activeDraftIdField').value = '';
+                        updateDraftBanner();
+                    }
+                    loadLobbyDrafts(); // Fetch refreshed list
+                } else {
+                    showToast('Failed to delete draft from cloud.', false);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Error connecting to delete draft.', false);
+            });
+        }
+
+        // Unloads the active draft back to clean state
+        function unloadActiveDraft() {
+            activeDraftId = null;
+            document.getElementById('activeDraftIdField').value = '';
+            form.reset();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reportDate').value = today;
+            calculateLiveTrainOrders();
+            calculateLiveBalancingPT();
+            calculateLiveRROccupancy();
+            updateDraftBanner();
+            renderDraftList();
+            clearRowNumber();
+            showToast("Exited draft mode. Form reset completed.", false);
+        }
+
+        // Manage visual display banner at the top of the form layout
+        function updateDraftBanner(draftName = '') {
+            const banner = document.getElementById('activeDraftBanner');
+            const nameEl = document.getElementById('activeDraftName');
+            if (activeDraftId && draftName) {
+                nameEl.innerText = draftName;
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
+        // Automatic local backup system
+        function triggerAutosave() {
+            const state = getFormState();
+            localStorage.setItem('railway_lobby_autosave_state', JSON.stringify(state));
+            
+            const text = document.getElementById('autosaveStatus');
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            text.innerText = `Autosaved: ${timestamp}`;
+        }
+
+        function loadAutosavedSessionOnStart() {
+            const savedState = localStorage.getItem('railway_lobby_autosave_state');
+            if (savedState) {
+                const currentLobby = document.getElementById('lobbySelect').value;
+                if (!currentLobby) { // Restores if user has not yet interacted with select
+                    loadFormState(JSON.parse(savedState));
+                    showToast("Your last unsaved form progress was recovered locally!", true);
+                }
+            }
+        }
+
+        // Manage active row overwrites
+        function clearRowNumber() {
+            document.getElementById('rowNumber').value = '';
+            document.getElementById('overwriteModeBanner').classList.add('hidden');
+        }
+
+        function cancelOverwriteMode() {
+            clearRowNumber();
+            showToast("Exited Overwrite Mode. New data submissions will append a new row.", false);
+        }
+
+        // Render the Last Submission widget in sidebar
+        function renderRecallWidget() {
+            const recallContainer = document.getElementById('recallContainer');
+            const lastSubmitted = localStorage.getItem('railway_lobby_last_submitted');
+            
+            if (!lastSubmitted) {
+                recallContainer.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-lg">No previous submission found.</p>`;
+                return;
+            }
+            
+            const parsed = JSON.parse(lastSubmitted);
+            const targetRowStr = parsed.row ? `Row #${parsed.row}` : 'Stored Row';
+            
+            recallContainer.innerHTML = `
+                <div class="bg-indigo-50/60 border border-indigo-100 rounded-xl p-3.5 space-y-3">
+                    <div class="flex justify-between items-center text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                        <span>Lobby: <strong class="text-indigo-700">${parsed.lobby}</strong></span>
+                        <span>${parsed.date}</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-white/80 p-2 rounded-lg border border-slate-100 text-[11px] text-slate-600 leading-snug">
+                        <span>Associated Sheet Target:</span>
+                        <strong class="text-amber-700 font-bold font-mono text-xs">${targetRowStr}</strong>
+                    </div>
+                    <div class="grid grid-cols-1 gap-2">
+                        <button type="button" onclick="recallLastSubmission()" class="py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18"></path></svg>
+                            Recall Data
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Restore form data from last submission
+        function recallLastSubmission() {
+            const lastSubmitted = localStorage.getItem('railway_lobby_last_submitted');
+            if (lastSubmitted) {
+                const parsed = JSON.parse(lastSubmitted);
+                loadFormState(parsed.data);
+                
+                // Track row ID to safely overwrite
+                if (parsed.row) {
+                    document.getElementById('rowNumber').value = parsed.row;
+                    document.getElementById('overwriteRowDisplay').innerText = parsed.row;
+                    document.getElementById('overwriteModeBanner').classList.remove('hidden');
+                }
+                
+                showToast("Last submitted report re-loaded! Edit and submit to overwrite.");
+            }
+        }
+
+        // Field distribution syntax & sum mathematical validations
+        function validateDetails(detailInputName, totalInputName, fieldLabel) {
+            const detailInput = document.querySelector(`input[name="${detailInputName}"]`);
+            const totalInput = document.querySelector(`input[name="${totalInputName}"]`);
+            
+            if (!detailInput || !totalInput) return { valid: true };
+
+            const detailStr = detailInput.value.trim();
+            const totalVal = parseInt(totalInput.value) || 0;
+
+            // Remove previous error styles
+            detailInput.classList.remove('border-red-500', 'ring-2', 'ring-red-100');
+
+            // Pass if both total and detail values are zero or empty
+            if (totalVal === 0 && detailStr === "") {
+                return { valid: true };
+            }
+
+            // Reject if total is designated but details are empty
+            if (totalVal > 0 && detailStr === "") {
+                detailInput.classList.add('border-red-500', 'ring-2', 'ring-red-100');
+                return { 
+                    valid: false, 
+                    error: `The details for <strong>${fieldLabel}</strong> cannot be left empty when total is <strong>${totalVal}</strong>.` 
+                };
+            }
+
+            // Regex layout match for UPPERCASE labels with hyphens and comma separators (e.g. BSP-20, KRBA-30)
+            const regex = /^([A-Z0-9\s]+-\d+)(,\s*[A-Z0-9\s]+-\d+)*$/;
+            
+            if (!regex.test(detailStr)) {
+                detailInput.classList.add('border-red-500', 'ring-2', 'ring-red-100');
+                return { 
+                    valid: false, 
+                    error: `<strong>${fieldLabel}</strong> structure is invalid.<br><br>Required Format: <b>BSP-20, KRBA-30</b><br>(Lobby code must be UPPERCASE, followed by hyphen and numeric count).` 
+                };
+            }
+
+            // Sum validation logic
+            const parts = detailStr.split(',');
+            let sum = 0;
+            for (let i = 0; i < parts.length; i++) {
+                const countStr = parts[i].split('-')[1]; // Capture portion after the dash
+                sum += parseInt(countStr);
+            }
+
+            if (sum !== totalVal) {
+                detailInput.classList.add('border-red-500', 'ring-2', 'ring-red-100');
+                return { 
+                    valid: false, 
+                    error: `Sum of detailed entries inside <strong>${fieldLabel}</strong> (${sum}) does not match your total count value (<strong>${totalVal}</strong>).` 
+                };
+            }
+
+            return { valid: true };
+        }
+
+        // Form submit triggers
+        form.addEventListener('submit', e => {
+            e.preventDefault(); 
+            
+            if (scriptURL === 'REPLACE_THIS_WITH_YOUR_WEB_APP_URL') {
+                document.getElementById('errorMessage').innerText = "System Warning: Google Apps Script Web App URL is not configured yet.";
+                showModal('errorModal');
+                return;
+            }
+
+            // Dynamic rule configurations mapped
+            const validationRules = [
+                { detail: 'RHQ Detail', total: 'TO RHQ', label: 'Detailed RHQ TO Distribution' },
+                { detail: 'Crew OS Elec Detail', total: 'Crew OS Elec', label: 'Electric OS Crew Utilization Detail' },
+                { detail: 'Crew OS Diesel Detail', total: 'Crew OS Diesel', label: 'Diesel OS Crew Utilization Detail' }
+            ];
+
+            // Validation loops trigger
+            for (let rule of validationRules) {
+                let check = validateDetails(rule.detail, rule.total, rule.label);
+                if (!check.valid) {
+                    document.getElementById('errorMessage').innerHTML = check.error;
+                    showModal('errorModal');
+                    return; // Terminate submission loop
+                }
+            }
+
+            // Submit visual loading controls
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner mr-2"></span> Transmitting data...';
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-80', 'cursor-not-allowed');
+
+            fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error("Network response was not ok");
+                })
+                .then(responseData => {
+                    const targetRow = responseData.row || null;
+                    
+                    // SAVE STATE TO RECALL MEMORY ON SUCCESS
+                    const currentData = getFormState();
+                    const recallObj = {
+                        timestamp: new Date().toLocaleString(),
+                        lobby: currentData['Lobby'] || 'N/A',
+                        date: currentData['Date'] || 'N/A',
+                        row: targetRow,
+                        data: currentData
+                    };
+                    localStorage.setItem('railway_lobby_last_submitted', JSON.stringify(recallObj));
+                    renderRecallWidget();
+
+                    // Prompt Success Modal
+                    showModal('successModal');
+                    form.reset();
+                    clearRowNumber();
+                    
+                    // Clean local backup on successful upload
+                    localStorage.removeItem('railway_lobby_autosave_state');
+                    
+                    // UNLOAD ACTIVE DRAFT & REMOVE BANNER
+                    activeDraftId = null;
+                    document.getElementById('activeDraftIdField').value = '';
+                    updateDraftBanner();
+                    
+                    // Refresh current lobby drafts (will be cleared because Google Script auto-deleted it!)
+                    loadLobbyDrafts();
+                    
+                    document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
+                    calculateLiveTrainOrders();
+                    calculateLiveBalancingPT();
+                    calculateLiveRROccupancy();
+                })
+                .catch(error => {
+                    console.error('Submission Failure', error.message);
+                    document.getElementById('errorMessage').innerHTML = '<strong>Connection Terminated:</strong> Google Sheets endpoint is currently unreachable.<br><br>Please verify your internet connection or Google Apps Script URL configuration and permissions.';
+                    showModal('errorModal');
+                })
+                .finally(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                });
+        });
+
+        // Modal triggers
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            const content = modal.querySelector('div');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        // Generic close modal action wrapper
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            const content = modal.querySelector('div');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300); 
+        }
+    </script>
+</body>
+</html>
