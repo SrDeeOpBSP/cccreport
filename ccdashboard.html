@@ -126,10 +126,26 @@
             </div>
 
             <!-- Custom Dates Input -->
-            <div class="flex items-center gap-2">
-                <input type="date" id="filterStartDate" onchange="handleFiltersChange()" class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-800 dark:text-slate-300 outline-none focus:border-blue-500">
-                <span class="text-xs text-slate-400 dark:text-slate-500">to</span>
-                <input type="date" id="filterEndDate" onchange="handleFiltersChange()" class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-800 dark:text-slate-300 outline-none focus:border-blue-500">
+               <div class="flex items-center gap-3 flex-wrap">
+                <select id="filterMonth" onchange="handleMonthYearChange()" class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-xs font-semibold rounded-xl px-2.5 py-1.5 outline-none focus:border-blue-500 cursor-pointer">
+                    <option value="ALL">-- All Months --</option>
+                    <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+                    <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+                    <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+                    <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+                </select>
+                
+                <select id="filterYear" onchange="handleMonthYearChange()" class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-xs font-semibold rounded-xl px-2.5 py-1.5 outline-none focus:border-blue-500 cursor-pointer">
+                    <option value="ALL">-- All Years --</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                </select>
+
+                <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-950 px-2 py-1 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <input type="date" id="filterStartDate" onchange="handleFiltersChange()" class="bg-transparent text-xs text-slate-800 dark:text-slate-300 outline-none">
+                    <span class="text-xs text-slate-400">to</span>
+                    <input type="date" id="filterEndDate" onchange="handleFiltersChange()" class="bg-transparent text-xs text-slate-800 dark:text-slate-300 outline-none">
+                </div>
             </div>
         </section>
 
@@ -620,10 +636,16 @@
                 
                 <!-- Table 1: Train Ordering Particulars Lobby Wise -->
                 <div class="bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                    <div class="p-3 bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 font-bold text-xs text-blue-600 dark:text-blue-400 flex justify-between">
-                        <span>TABLE I: TRAIN ORDERING PARTICULARS LOBBY WISE</span>
-                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono">Full Column Breakdown</span>
-                    </div>
+                  <div class="p-3 bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 font-bold text-xs text-blue-600 dark:text-blue-400 flex justify-between items-center">
+                      <span>TABLE I: TRAIN ORDERING PARTICULARS LOBBY WISE</span>
+                      <div class="flex items-center gap-2">
+                          <div class="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-900">
+                              <button onclick="toggleTableMode(1, 'total')" id="btn-t1-total" class="px-2 py-0.5 rounded bg-blue-600 text-white text-[10px] font-bold shadow">Total</button>
+                              <button onclick="toggleTableMode(1, 'avg')" id="btn-t1-avg" class="px-2 py-0.5 rounded text-slate-500 text-[10px] font-medium">Average</button>
+                          </div>
+                          <button onclick="downloadSingleTable('repTableTrainOrdering', 'TABLE_I_TRAIN_ORDERING')" class="p-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] flex items-center gap-1"><i class="fa-solid fa-file-excel"></i> Export</button>
+                      </div>
+                  </div>
                     <div class="overflow-x-auto w-full">
                         <table class="w-full text-left border-collapse text-[10px] min-w-[1300px]">
                  <thead>
@@ -656,10 +678,16 @@
 
                 <!-- Table 2: PT Balancing, Logistics & Running Room Crew Resources -->
                 <div class="bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                    <div class="p-3 bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 font-bold text-xs text-teal-600 dark:text-teal-400 flex justify-between">
-                        <span>TABLE II: PT BALANCING LOGISTICS & CREW RESOURCE UTILIZATION</span>
-                        <span class="text-[10px] text-slate-500 font-mono">Full Column Breakdown</span>
-                    </div>
+                   <div class="p-3 bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 font-bold text-xs text-teal-600 dark:text-teal-400 flex justify-between items-center">
+                       <span>TABLE II: PT BALANCING LOGISTICS & CREW RESOURCE UTILIZATION</span>
+                       <div class="flex items-center gap-2">
+                           <div class="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-900">
+                               <button onclick="toggleTableMode(2, 'total')" id="btn-t2-total" class="px-2 py-0.5 rounded bg-teal-600 text-white text-[10px] font-bold shadow">Total</button>
+                               <button onclick="toggleTableMode(2, 'avg')" id="btn-t2-avg" class="px-2 py-0.5 rounded text-slate-500 text-[10px] font-medium">Average</button>
+                           </div>
+                           <button onclick="downloadSingleTable('repTablePtCrew', 'TABLE_II_PT_BALANCING_CREW')" class="p-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] flex items-center gap-1"><i class="fa-solid fa-file-excel"></i> Export</button>
+                       </div>
+                   </div>
                     <div class="overflow-x-auto w-full">
                         <table class="w-full text-left border-collapse text-[10px] min-w-[1300px]">
                 <thead>
@@ -691,10 +719,16 @@
 
                <!-- Table 3: Lobby Performance Particulars (Exact Excel Format) -->
 <div class="bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm dark:shadow-none">
-    <div class="p-4 bg-slate-100/70 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 font-bold text-xs text-orange-600 dark:text-orange-400 flex justify-between">
-        <span><i class="fa-solid fa-gauge-high mr-1"></i> TABLE III: LOBBY PERFORMANCE PARTICULARS</span>
-        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono">Full Breakdown Matrix</span>
+<div class="p-4 bg-slate-100/70 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 font-bold text-xs text-orange-600 dark:text-orange-400 flex justify-between items-center">
+    <span><i class="fa-solid fa-gauge-high mr-1"></i> TABLE III: LOBBY PERFORMANCE PARTICULARS</span>
+    <div class="flex items-center gap-2">
+        <div class="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-900">
+            <button onclick="toggleTableMode(3, 'total')" id="btn-t3-total" class="px-2 py-0.5 rounded bg-orange-600 text-white text-[10px] font-bold shadow">Total</button>
+            <button onclick="toggleTableMode(3, 'avg')" id="btn-t3-avg" class="px-2 py-0.5 rounded text-slate-500 text-[10px] font-medium">Average</button>
+        </div>
+        <button onclick="downloadSingleTable('repTablePerformance', 'TABLE_III_LOBBY_PERFORMANCE')" class="p-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] flex items-center gap-1"><i class="fa-solid fa-file-excel"></i> Export</button>
     </div>
+</div>
     <div class="overflow-x-auto w-full">
         <table class="w-full text-left border-collapse text-[10px] min-w-[1300px]">
            <thead>
@@ -727,10 +761,16 @@
 
                 <!-- Table 4: Mass Counselling Particulars (Exact Excel Format) -->
 <div class="bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm dark:shadow-none">
-    <div class="p-4 bg-slate-100/70 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 font-bold text-xs text-rose-600 dark:text-rose-400 flex justify-between">
-        <span><i class="fa-solid fa-people-group mr-1"></i> TABLE IV: MASS COUNSELLING PARTICULARS</span>
-        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono">Full Column Breakdown</span>
+<div class="p-4 bg-slate-100/70 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 font-bold text-xs text-rose-600 dark:text-rose-400 flex justify-between items-center">
+    <span><i class="fa-solid fa-people-group mr-1"></i> TABLE IV: MASS COUNSELLING PARTICULARS</span>
+    <div class="flex items-center gap-2">
+        <div class="inline-flex rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-900">
+            <button onclick="toggleTableMode(4, 'total')" id="btn-t4-total" class="px-2 py-0.5 rounded bg-rose-600 text-white text-[10px] font-bold shadow">Total</button>
+            <button onclick="toggleTableMode(4, 'avg')" id="btn-t4-avg" class="px-2 py-0.5 rounded text-slate-500 text-[10px] font-medium">Average</button>
+        </div>
+        <button onclick="downloadSingleTable('repTableSafety', 'TABLE_IV_MASS_COUNSELLING')" class="p-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] flex items-center gap-1"><i class="fa-solid fa-file-excel"></i> Export</button>
     </div>
+</div>
     <div class="overflow-x-auto w-full">
         <table class="w-full text-left border-collapse text-[10px] min-w-[1100px]">
                <thead>
@@ -967,6 +1007,7 @@
         let fullSubmissionData = []; // Store containing 64 column arrays of rows
         let filteredSubmissionData = []; // Filtered rows based on Date Range and Lobby
         let activeInspectCategory = 'General';
+        let tableModes = { 1: 'total', 2: 'total', 3: 'total', 4: 'total' };
         let inspectedRowIndex = null;
 
         // Visual Charts instances
@@ -1370,7 +1411,105 @@
             renderOperationalCharts();
             compileLobbyWiseTables();
         }
+// Handle Month & Year Selectors logic
+        function handleMonthYearChange() {
+            let selMonth = document.getElementById('filterMonth').value;
+            let selYear = document.getElementById('filterYear').value;
+            
+            if (selMonth !== 'ALL' || selYear !== 'ALL') {
+                let now = new Date();
+                let y = selYear !== 'ALL' ? parseInt(selYear) : now.getFullYear();
+                let mStart = selMonth !== 'ALL' ? parseInt(selMonth) : 0;
+                let mEnd = selMonth !== 'ALL' ? parseInt(selMonth) : 11;
+                
+                let firstDay = new Date(y, mStart, 1).toISOString().split('T')[0];
+                let lastDay = new Date(y, mEnd + 1, 0).toISOString().split('T')[0];
+                
+                document.getElementById('filterStartDate').value = firstDay;
+                document.getElementById('filterEndDate').value = lastDay;
+            }
+            handleFiltersChange();
+        }
 
+        // Toggle Total vs Average modes dynamically
+        function toggleTableMode(tableNum, mode) {
+            tableModes[tableNum] = mode;
+            let themeColors = { 1: 'bg-blue-600', 2: 'bg-teal-600', 3: 'bg-orange-600', 4: 'bg-rose-600' };
+            let activeColor = themeColors[tableNum];
+            
+            let btnTotal = document.getElementById(`btn-t${tableNum}-total`);
+            let btnAvg = document.getElementById(`btn-t${tableNum}-avg`);
+            
+            if (mode === 'total') {
+                btnTotal.className = `px-2 py-0.5 rounded text-white text-[10px] font-bold shadow ${activeColor}`;
+                btnAvg.className = "px-2 py-0.5 rounded text-slate-500 text-[10px] font-medium";
+            } else {
+                btnTotal.className = "px-2 py-0.5 rounded text-slate-500 text-[10px] font-medium";
+                btnAvg.className = `px-2 py-0.5 rounded text-white text-[10px] font-bold shadow ${activeColor}`;
+            }
+            compileLobbyWiseTables(); // Recalculate and re-render grid
+        }
+
+  // Upgraded CSV Downloader: Flattens complex headers so Excel opens it in perfect column arrangement
+        function downloadSingleTable(tableBodyId, filename) {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            let tableElement = document.getElementById(tableBodyId);
+            if (!tableElement) return showToast("Table component missing!", "error");
+
+            // 1. Table ka proper Title/Heading auto-detect karke top par set karenge
+            let cleanTitle = filename.replace(/_/g, " ");
+            let parentSection = tableElement.closest('.bg-white, .bg-slate-50, section');
+            if (parentSection) {
+                let headerTextContainer = parentSection.querySelector('div.font-bold span, h3 span');
+                if (headerTextContainer) {
+                    cleanTitle = headerTextContainer.innerText.trim();
+                }
+            }
+            csvContent += `"${cleanTitle}"\r\n\r\n`;
+
+            // 2. Excel ke columns ko completely un-arrange hone se bachane ke liye flat headers array mapping
+            let flatHeaders = [];
+            if (tableBodyId === 'repTableTrainOrdering') {
+                flatHeaders = ["Lobby", "TO Elec UP", "TO Elec DN", "TO Elec TOTAL", "TO Diesel UP", "TO Diesel DN", "TO Diesel TOTAL", "TOTAL TO", "TOTAL SHUTTLING", "TOTAL RHQ", "RE-TO UP", "RE-TO DN", "RE-TO TOTAL", "FOIS GEN ELECT.", "FOIS GEN DIESEL", "FOIS GEN TOTAL", "TKE UP", "TKE DN", "TKE TOTAL", "SECTION PILOT UP", "SECTION PILOT DN", "SECTION PILOT TOTAL"];
+            } else if (tableBodyId === 'repTablePtCrew') {
+                flatHeaders = ["Lobby", "INCOMING PILOT By Jeep", "INCOMING PILOT By Train", "INCOMING PILOT Total", "OUTGOING PILOT By Jeep", "OUTGOING PILOT By Train", "OUTGOING PILOT Total", "HQ CREW ELECT.", "HQ CREW DIESEL", "DIESEL OS CREW ELECT.", "DIESEL OS CREW DIESEL", "RR BED Total Bed", "RR BED Total Occ.", "RR BED Occ %", "JEEP FLEET Avl.", "JEEP FLEET Breakdown", "FSD ALP YES", "FSD ALP NO"];
+            } else if (tableBodyId === 'repTablePerformance') {
+                flatHeaders = ["Lobby", "PDD Avg UP", "PDD Avg DN", "PDD Avg Overall Avg.", "PDD>2hrs UP", "PDD>2hrs DN", "PDD>2hrs Total", "SOSO 12Hrs", "SOSO 14 Hrs", "SOWS 12Hrs", "SOWS 14 Hrs", "Total WOR", "Manual CMS On", "Manual CMS Off", "Auto Sig Overdue", "CRC Overdue", "PME Overdue"];
+            } else if (tableBodyId === 'repTableSafety') {
+                flatHeaders = ["Lobby", "RS Valve Lobby", "RS Valve Loco", "RS Valve Total", "Mass Session No. of Session", "Mass Session CLIs Attended", "Mass Session LPs Attended", "Mass Session LPSs Attended", "Mass Session ALPs Attended", "Mass Session Total"];
+            }
+
+            // Flat headers ko CSV me write karenge
+            if (flatHeaders.length > 0) {
+                csvContent += flatHeaders.map(h => `"${h}"`).join(",") + "\r\n";
+            }
+
+            // 3. Tbody ke saare record rows aur bottom TOTAL row ko bina text bikhre read karega
+            let trs = tableElement.querySelectorAll('tr');
+            if (trs.length === 0) return showToast("No operational rows to export!", "error");
+            
+            trs.forEach(tr => {
+                let cells = Array.from(tr.querySelectorAll('td')).map(td => {
+                    let text = td.innerText.trim();
+                    // Percentage (%) sign ko Excel cells me safe rakhne ke liye safai
+                    text = text.replace(/%/g, "%");
+                    // Double quotes handle karne ke liye escape condition
+                    return `"${text.replace(/"/g, '""')}"`;
+                });
+                csvContent += cells.join(",") + "\r\n";
+            });
+            
+            // File Automatic Download Trigger System
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `${filename}_${document.getElementById('filterStartDate').value}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast("Excel spreadsheet downloaded perfectly aligned!", "success");
+        }
         // Calculate Executive KPIs
 function calculateKpiDashboard() {
     let totalTo = 0, totalToElec = 0, totalToDiesel = 0;
@@ -1514,7 +1653,7 @@ function calculateKpiDashboard() {
             let upRuns = 0, dnRuns = 0;
             let rtoUp = 0, rtoDn = 0, totalTke = 0;
             let totalRhq = 0;
-            let rhqDetailsText = [];
+            let rhqDistributionMap = {};
             
             let ptUp = 0, ptDn = 0;
             let ptInJeep = 0, ptInTrain = 0, ptOutJeep = 0, ptOutTrain = 0;
@@ -1540,7 +1679,20 @@ function calculateKpiDashboard() {
                 rtoDn += (parseFloat(row[11]) || 0);
                 totalTke += (parseFloat(row[14]) || 0) + (parseFloat(row[15]) || 0);
                 totalRhq += (parseFloat(row[8]) || 0);
-                if (row[9] && row[9] !== 'NIL' && row[9] !== '') rhqDetailsText.push(row[9]);
+                
+                if (row[9] && row[9] !== 'NIL' && row[9] !== '') {
+                    let parts = row[9].split(/[\s,]+/);
+                    parts.forEach(part => {
+                        let subParts = part.split('-');
+                        if (subParts.length === 2) {
+                            let lobbyName = subParts[0].trim().toUpperCase();
+                            let count = parseInt(subParts[1]) || 0;
+                            if (lobbyName && count > 0) {
+                                rhqDistributionMap[lobbyName] = (rhqDistributionMap[lobbyName] || 0) + count;
+                            }
+                        }
+                    });
+                }
 
                 ptUp += (parseFloat(row[16]) || 0);
                 ptDn += (parseFloat(row[17]) || 0);
@@ -1590,10 +1742,15 @@ function calculateKpiDashboard() {
             document.getElementById('barDnRuns').style.width = Math.round((dnRuns / totalRuns) * 100) + '%';
             document.getElementById('txtRtoUp').innerText = rtoUp;
             document.getElementById('txtRtoDn').innerText = rtoDn;
-            document.getElementById('txtTotalTke').innerText = totalTke;
+           document.getElementById('txtTotalTke').innerText = totalTke;
             document.getElementById('txtTotalRhq').innerText = totalRhq;
-            document.getElementById('txtRhqDetails').innerText = rhqDetailsText.length > 0 ? [...new Set(rhqDetailsText)].slice(0, 3).join(', ') : 'No Distribution logs.';
-
+            
+            let finalDistributionArray = [];
+            for (let lob in rhqDistributionMap) {
+                finalDistributionArray.push(`${lob}-${rhqDistributionMap[lob]}`);
+            }
+            finalDistributionArray.sort(); 
+            document.getElementById('txtRhqDetails').innerText = finalDistributionArray.length > 0 ? finalDistributionArray.join(', ') : 'No Distribution recorded in criteria.';
             document.getElementById('txtPtBalancingUp').innerText = ptUp;
             document.getElementById('txtPtBalancingDn').innerText = ptDn;
             document.getElementById('txtPtInJeep').innerText = ptInJeep;
@@ -2019,8 +2176,6 @@ function renderOperationalCharts() {
             showToast(`Compiled ${period.toUpperCase()} Lobby Report metrics!`, "success");
         }
 
-       // Intercepts filteredSubmissionData and aggregates parameters Lobby-Wise
-// Intercepts filteredSubmissionData and aggregates parameters Lobby-Wise
 function compileLobbyWiseTables() {
     // Helper to format minutes to hh:mm cleanly inside report tables
     function formatReportHhMm(totalMinutes) {
@@ -2031,30 +2186,16 @@ function compileLobbyWiseTables() {
     }
     const lobbies = ['AKT', 'BJRI', 'BRJN', 'BSP', 'KHS', 'KRBA', 'PND', 'RIG', 'SDL', 'SJQ', 'USL'];
     
-    // Division Grand Total Counters for Table I, Table II, Table III & Table IV
-    const gTotal1 = {
-        elecUp: 0, elecDn: 0, elecTot: 0, dslUp: 0, dslDn: 0, dslTot: 0, totalTo: 0, shuttling: 0, rhq: 0,
-        rtoUp: 0, rtoDn: 0, rtoTot: 0, foisElec: 0, foisDsl: 0, foisTot: 0, tkeUp: 0, tkeDn: 0, tkeTot: 0,
-        balUp: 0, balDn: 0, balTot: 0
-    };
+    // Division Grand Total Visible Counters (Jo screen par display honge)
+    const displayTotal1 = { elecUp: 0, elecDn: 0, elecTot: 0, dslUp: 0, dslDn: 0, dslTot: 0, totalTo: 0, shuttling: 0, rhq: 0, rtoUp: 0, rtoDn: 0, rtoTot: 0, foisElec: 0, foisDsl: 0, foisTot: 0, tkeUp: 0, tkeDn: 0, tkeTot: 0, balUp: 0, balDn: 0, balTot: 0 };
+    const displayTotal2 = { inJeep: 0, inTrain: 0, inTot: 0, outJeep: 0, outTrain: 0, outTot: 0, hqElec: 0, hqDsl: 0, osElec: 0, osDsl: 0, beds: 0, occ: 0, jeepTot: 0, jeepBd: 0, fsdY: 0, fsdN: 0 };
+    const displayTotal3 = { highUp: 0, highDn: 0, highTot: 0, soso12: 0, soso14: 0, sows12: 0, sows14: 0, totalWor: 0, cmsOn: 0, cmsOff: 0, autoOverdue: 0, crcOverdue: 0, pmeOverdue: 0 };
+    const displayTotal4 = { rsLobby: 0, rsLoco: 0, rsTotal: 0, sessions: 0, clis: 0, lps: 0, lpss: 0, alps: 0, massTotal: 0 };
 
-    const gTotal2 = {
-        inJeep: 0, inTrain: 0, inTot: 0, outJeep: 0, outTrain: 0, outTot: 0,
-        hqElec: 0, hqDsl: 0, osElec: 0, osDsl: 0,
-        beds: 0, occ: 0, jeepTot: 0, jeepBd: 0, fsdY: 0, fsdN: 0
-    };
-
-    const gTotal3 = {
-        pddUpSum: 0, pddUpCount: 0, pddDnSum: 0, pddDnCount: 0, pddOverallSum: 0, pddOverallCount: 0,
-        highUp: 0, highDn: 0, highTot: 0,
-        soso12: 0, soso14: 0, sows12: 0, sows14: 0, totalWor: 0, cmsOn: 0, cmsOff: 0,
-        autoOverdue: 0, crcOverdue: 0, pmeOverdue: 0
-    };
-
-    const gTotal4 = {
-        rsLobby: 0, rsLoco: 0, rsTotal: 0,
-        sessions: 0, clis: 0, lps: 0, lpss: 0, alps: 0, massTotal: 0
-    };
+    // Net dataset aggregates trackers for pure mathematical average calculations
+    let globalPddUpSum = 0, globalPddUpCount = 0;
+    let globalPddDnSum = 0, globalPddDnCount = 0;
+    let globalPddOverallSum = 0, globalPddOverallCount = 0;
 
     // Grouping dictionary setup
     const agg = {};
@@ -2088,7 +2229,6 @@ function compileLobbyWiseTables() {
             a.balUp += (parseFloat(row[16]) || 0);   a.balDn += (parseFloat(row[17]) || 0);
 
             // Table II mappings
-            a.ptUp += (parseFloat(row[16]) || 0);     a.ptDn += (parseFloat(row[17]) || 0);
             a.ptInJeep += (parseFloat(row[18]) || 0); a.ptInTrain += (parseFloat(row[19]) || 0);
             a.ptOutJeep += (parseFloat(row[20]) || 0);a.ptOutTrain += (parseFloat(row[21]) || 0);
             a.crewHqElec += (parseFloat(row[22]) || 0);a.crewHqDiesel += (parseFloat(row[23]) || 0);
@@ -2098,8 +2238,18 @@ function compileLobbyWiseTables() {
             a.fsdAlp += (parseFloat(row[33]) || 0);   a.fsdNotAlp += (parseFloat(row[34]) || 0);
             
             // Table III performance mappings
-            if (row[35] > 0) { a.pddUpSum += parseFloat(row[35]); a.pddUpCount++; }
-            if (row[36] > 0) { a.pddDnSum += parseFloat(row[36]); a.pddDnCount++; }
+            const upPddVal = parseFloat(row[35]) || 0;
+            const dnPddVal = parseFloat(row[36]) || 0;
+            if (upPddVal > 0) { 
+                a.pddUpSum += upPddVal; a.pddUpCount++; 
+                globalPddUpSum += upPddVal; globalPddUpCount++;
+                globalPddOverallSum += upPddVal; globalPddOverallCount++;
+            }
+            if (dnPddVal > 0) { 
+                a.pddDnSum += dnPddVal; a.pddDnCount++; 
+                globalPddDnSum += dnPddVal; globalPddDnCount++;
+                globalPddOverallSum += dnPddVal; globalPddOverallCount++;
+            }
             
             a.upPdd2 += (parseFloat(row[37]) || 0);   a.dnPdd2 += (parseFloat(row[38]) || 0);
             a.soso12 += (parseFloat(row[39]) || 0);   a.soso14 += (parseFloat(row[40]) || 0);
@@ -2112,197 +2262,243 @@ function compileLobbyWiseTables() {
             a.rsValveLobby += (parseFloat(row[52]) || 0); a.rsValveLoco += (parseFloat(row[53]) || 0);
             a.massSessions += (parseFloat(row[54]) || 0); a.massClis += (parseFloat(row[55]) || 0);
             a.massLps += (parseFloat(row[56]) || 0);    a.massLpss += (parseFloat(row[57]) || 0);
-            a.massAlps += (parseFloat(row[58]) || 0);   a.autoSignalOverdue += (parseFloat(row[59]) || 0);
-            a.crcOverdue += (parseFloat(row[60]) || 0); a.pmeOverdue += (parseFloat(row[62]) || 0);
+            a.massAlps += (parseFloat(row[58]) || 0);   
+            
+            if (!a.hasLatestOverdue) {
+                a.autoSignalOverdue = parseFloat(row[59]) || 0;
+                a.crcOverdue = parseFloat(row[60]) || 0;
+                a.pmeOverdue = parseFloat(row[62]) || 0;
+                a.hasLatestOverdue = true;
+            }
         }
     });
 
-  // --- POPULATE TABLE I (Train Ordering Particulars Matrix - Solid Black Borders & Centered text) ---
+    // Tracking variables to calculate the sum of averages for the PDD bottom line in Average Mode
+    let avgModePddUpSumOfRows = 0, avgModePddDnSumOfRows = 0, avgModePddOverallSumOfRows = 0;
+    let activeLobbiesWithPdd = 0;
+
+    // --- POPULATE TABLE I (Train Ordering Particulars Matrix) ---
     let table1HTML = lobbies.map(l => {
         const d = agg[l];
-        const elecTot = d.elecUp + d.elecDn;
-        const dslTot = d.dslUp + d.dslDn;
-        const totalTo = elecTot + dslTot;
-        const rtoTot = d.rtoUp + d.rtoDn;
-        const foisTot = d.foisElec + d.foisDsl;
-        const tkeTot = d.tkeUp + d.tkeDn;
-        const balTot = d.balUp + d.balDn;
+        let div = (tableModes[1] === 'avg' && d.count > 0) ? d.count : 1;
 
-        gTotal1.elecUp += d.elecUp; gTotal1.elecDn += d.elecDn; gTotal1.elecTot += elecTot;
-        gTotal1.dslUp += d.dslUp;   gTotal1.dslDn += d.dslDn;   gTotal1.dslTot += dslTot;
-        gTotal1.totalTo += totalTo; gTotal1.shuttling += d.shuttling; gTotal1.rhq += d.rhq;
-        gTotal1.rtoUp += d.rtoUp;   gTotal1.rtoDn += d.rtoDn;   gTotal1.rtoTot += rtoTot;
-        gTotal1.foisElec += d.foisElec; gTotal1.foisDsl += d.foisDsl; gTotal1.foisTot += foisTot;
-        gTotal1.tkeUp += d.tkeUp;   gTotal1.tkeDn += d.tkeDn;   gTotal1.tkeTot += tkeTot;
-        gTotal1.balUp += d.balUp;   gTotal1.balDn += d.balDn;   gTotal1.balTot += balTot;
+        const elUp = Math.round(d.elecUp / div);   const elDn = Math.round(d.elecDn / div);   const elecTot = elUp + elDn;
+        const dsUp = Math.round(d.dslUp / div);    const dsDn = Math.round(d.dslDn / div);    const dslTot = dsUp + dsDn;
+        const totalTo = elecTot + dslTot;
+        const shut = Math.round(d.shuttling / div); const rq = Math.round(d.rhq / div);
+        const rtUp = Math.round(d.rtoUp / div);    const rtDn = Math.round(d.rtoDn / div);    const rtoTot = rtUp + rtDn;
+        const fxEl = Math.round(d.foisElec / div); const fxDs = Math.round(d.foisDsl / div); const foisTot = fxEl + fxDs;
+        const tkUp = Math.round(d.tkeUp / div);    const tkDn = Math.round(d.tkeDn / div);    const tkeTot = tkUp + tkDn;
+        const blUp = Math.round(d.balUp / div);    const blDn = Math.round(d.balDn / div);    const balTot = blUp + blDn;
+
+        displayTotal1.elecUp += elUp;   displayTotal1.elecDn += elDn;   displayTotal1.elecTot += elecTot;
+        displayTotal1.dslUp += dsUp;    displayTotal1.dslDn += dsDn;    displayTotal1.dslTot += dslTot;
+        displayTotal1.totalTo += totalTo; displayTotal1.shuttling += shut; displayTotal1.rhq += rq;
+        displayTotal1.rtoUp += rtUp;    displayTotal1.rtoDn += rtDn;    displayTotal1.rtoTot += rtoTot;
+        displayTotal1.foisElec += fxEl; displayTotal1.foisDsl += fxDs; displayTotal1.foisTot += foisTot;
+        displayTotal1.tkeUp += tkUp;    displayTotal1.tkeDn += tkDn;    displayTotal1.tkeTot += tkeTot;
+        displayTotal1.balUp += blUp;    displayTotal1.balDn += blDn;    displayTotal1.balTot += balTot;
 
         return `<tr class="hover:bg-slate-100 dark:hover:bg-slate-900/40 text-center text-xs h-9 transition-colors border border-black dark:border-slate-700">
             <td class="p-2 border border-black dark:border-slate-700 text-left font-bold bg-slate-100 dark:bg-slate-900/30 text-blue-600 dark:text-blue-400">${l}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.elecUp}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.elecDn}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-blue-500/5 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400">${elecTot}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.dslUp}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.dslDn}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-amber-500/5 dark:bg-amber-950/20 text-amber-600 dark:text-amber-500">${dslTot}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${elUp}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${elDn}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-blue-500/5 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400">${elecTot}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${dsUp}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${dsDn}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-amber-500/5 dark:bg-amber-950/20 text-amber-600 dark:text-amber-500">${dslTot}</td>
             <td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-slate-200/40 dark:bg-slate-800/40 text-slate-900 dark:text-white">${totalTo}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.shuttling}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono font-bold text-slate-700 dark:text-slate-300">${d.rhq}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.rtoUp}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.rtoDn}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-slate-200 dark:bg-slate-900 text-amber-600 dark:text-amber-500">${rtoTot}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.foisElec}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.foisDsl}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-emerald-500/5 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400">${foisTot}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.tkeUp}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.tkeDn}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-red-500/5 dark:bg-red-950/20 text-red-600 dark:text-red-400">${tkeTot}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.balUp}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.balDn}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-purple-500/5 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400">${balTot}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${shut}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono font-bold text-slate-700 dark:text-slate-300">${rq}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${rtUp}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${rtDn}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-slate-200 dark:bg-slate-900 text-amber-600 dark:text-amber-400">${rtoTot}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${fxEl}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${fxDs}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-emerald-500/5 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400">${foisTot}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${tkUp}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${tkDn}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-red-500/5 dark:bg-red-950/20 text-red-600 dark:text-red-400">${tkeTot}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${blUp}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${blDn}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-purple-500/5 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400">${balTot}</td>
         </tr>`;
     }).join('');
 
-    // Table I Grand Total Row (Centered numbers via font-mono text-center targets & bold black grids)
     table1HTML += `<tr class="bg-slate-200 dark:bg-slate-900 font-extrabold text-slate-900 dark:text-white text-xs h-9 shadow-inner border-2 border-black dark:border-slate-600 text-center">
         <td class="p-2 border border-black dark:border-slate-600 text-left text-emerald-700 dark:text-emerald-400 uppercase tracking-wider font-bold">TOTAL</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal1.elecUp}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal1.elecDn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center font-bold bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400">${gTotal1.elecTot}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal1.dslUp}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal1.dslDn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-500">${gTotal1.dslTot}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-slate-300 dark:bg-slate-800 text-slate-900 dark:text-slate-100">${gTotal1.totalTo}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-slate-800 dark:text-slate-200">${gTotal1.shuttling}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-slate-800 dark:text-slate-200">${gTotal1.rhq}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal1.rtoUp}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal1.rtoDn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-slate-300 dark:bg-slate-950 text-amber-700 dark:text-amber-400">${gTotal1.rtoTot}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal1.foisElec}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal1.foisDsl}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">${gTotal1.foisTot}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal1.tkeUp}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal1.tkeDn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400">${gTotal1.tkeTot}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal1.balUp}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal1.balDn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400">${gTotal1.balTot}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal1.elecUp}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal1.elecDn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center font-bold bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400">${displayTotal1.elecTot}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal1.dslUp}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal1.dslDn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-500">${displayTotal1.dslTot}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-slate-300 dark:bg-slate-800 text-slate-900 dark:text-slate-100">${displayTotal1.totalTo}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-slate-800 dark:text-slate-200">${displayTotal1.shuttling}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-slate-800 dark:text-slate-200">${displayTotal1.rhq}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal1.rtoUp}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal1.rtoDn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-slate-300 dark:bg-slate-950 text-amber-700 dark:text-amber-400">${displayTotal1.rtoTot}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal1.foisElec}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal1.foisDsl}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">${displayTotal1.foisTot}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal1.tkeUp}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal1.tkeDn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400">${displayTotal1.tkeTot}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal1.balUp}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal1.balDn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400">${displayTotal1.balTot}</td>
     </tr>`;
 
     document.getElementById('repTableTrainOrdering').innerHTML = table1HTML;
-  // --- POPULATE TABLE II (PT Balancing & Resource Metrics Matrix - Deep Black Borders & Centered text) ---
+
+    // --- POPULATE TABLE II (PT Balancing & Resource Metrics) ---
     let table2HTML = lobbies.map(l => {
         const d = agg[l];
-        const inTot = d.ptInJeep + d.ptInTrain;
-        const outTot = d.ptOutJeep + d.ptOutTrain;
-        const rrOcc = d.bedsRr > 0 ? Math.round((d.occRr / d.bedsRr) * 100) : 0;
+        let div = (tableModes[2] === 'avg' && d.count > 0) ? d.count : 1;
 
-        gTotal2.inJeep += d.ptInJeep;   gTotal2.inTrain += d.ptInTrain; gTotal2.inTot += inTot;
-        gTotal2.outJeep += d.ptOutJeep; gTotal2.outTrain += d.ptOutTrain; gTotal2.outTot += outTot;
-        gTotal2.hqElec += d.crewHqElec; gTotal2.hqDsl += d.crewHqDiesel;
-        gTotal2.osElec += d.crewOsElec; gTotal2.osDsl += d.crewOsDiesel;
-        gTotal2.beds += d.bedsRr;       gTotal2.occ += d.occRr;
-        gTotal2.jeepTot += d.jeepTotal; gTotal2.jeepBd += d.jeepBreakdown;
-        gTotal2.fsdY += d.fsdAlp;       gTotal2.fsdN += d.fsdNotAlp;
+        const iJp = Math.round(d.ptInJeep / div);    const iTr = Math.round(d.ptInTrain / div);   const inTot = iJp + iTr;
+        const oJp = Math.round(d.ptOutJeep / div);   const oTr = Math.round(d.ptOutTrain / div);  const outTot = oJp + oTr;
+        const hqEl = Math.round(d.crewHqElec / div); const hqDs = Math.round(d.crewHqDiesel / div);
+        const osEl = Math.round(d.crewOsElec / div); const osDs = Math.round(d.crewOsDiesel / div);
+        const bdRr = Math.round(d.bedsRr / div);     const ocRr = Math.round(d.occRr / div);
+        const jpTot = Math.round(d.jeepTotal / div); const jpBd = Math.round(d.jeepBreakdown / div);
+        const fsY = Math.round(d.fsdAlp / div);      const fsN = Math.round(d.fsdNotAlp / div);
+        
+        const rrOcc = bdRr > 0 ? Math.round((ocRr / bdRr) * 100) : 0;
+
+        displayTotal2.inJeep += iJp;   displayTotal2.inTrain += iTr; displayTotal2.inTot += inTot;
+        displayTotal2.outJeep += oJp;  displayTotal2.outTrain += oTr; displayTotal2.outTot += outTot;
+        displayTotal2.hqElec += hqEl;  displayTotal2.hqDsl += hqDs;
+        displayTotal2.osElec += osEl;  displayTotal2.osDsl += osDs;
+        displayTotal2.beds += bdRr;    displayTotal2.occ += ocRr;
+        displayTotal2.jeepTot += jpTot; displayTotal2.jeepBd += jpBd;
+        displayTotal2.fsdY += fsY;     displayTotal2.fsdN += fsN;
 
         return `<tr class="hover:bg-slate-100 dark:hover:bg-slate-900/40 text-center text-xs h-9 transition-colors border border-black dark:border-slate-700">
             <td class="p-2 border border-black dark:border-slate-700 text-left font-bold bg-slate-100 dark:bg-slate-900/30 text-teal-600 dark:text-teal-400">${l}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.ptInJeep}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.ptInTrain}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-teal-500/5 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400">${inTot}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.ptOutJeep}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.ptOutTrain}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-teal-500/5 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400">${outTot}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.crewHqElec}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.crewHqDiesel}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.crewOsElec}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.crewOsDiesel}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.bedsRr}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.occRr}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold text-teal-600 dark:text-teal-400 bg-slate-100 dark:bg-slate-900/40">${rrOcc}%</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.jeepTotal}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-red-600 dark:text-red-400 font-semibold">${d.jeepBreakdown}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">${d.fsdAlp}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.fsdNotAlp}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${iJp}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${iTr}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-teal-500/5 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400">${inTot}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${oJp}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${oTr}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-teal-500/5 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400">${outTot}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${hqEl}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${hqDs}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${osEl}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${osDs}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${bdRr}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${ocRr}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold text-teal-600 dark:text-teal-400 bg-slate-100 dark:bg-slate-900/40">${rrOcc}%</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${jpTot}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-red-600 dark:text-red-400 font-semibold">${jpBd}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">${fsY}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${fsN}</td>
         </tr>`;
     }).join('');
 
-    // Table II Grand Total Row with explicit Center Alignment and Solid Borders
-    const divisionRrOcc = gTotal2.beds > 0 ? Math.round((gTotal2.occ / gTotal2.beds) * 100) : 0;
+    const divisionRrOcc = displayTotal2.beds > 0 ? Math.round((displayTotal2.occ / displayTotal2.beds) * 100) : 0;
     table2HTML += `<tr class="bg-slate-200 dark:bg-slate-900 font-extrabold text-slate-900 dark:text-white text-xs h-9 shadow-inner border-2 border-black dark:border-slate-600 text-center">
         <td class="p-2 border border-black dark:border-slate-600 text-left text-emerald-700 dark:text-emerald-400 uppercase tracking-wider font-bold">TOTAL</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal2.inJeep}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal2.inTrain}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-teal-100 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400">${gTotal2.inTot}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal2.outJeep}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal2.outTrain}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-teal-100 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400">${gTotal2.outTot}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal2.hqElec}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal2.hqDsl}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal2.osElec}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal2.osDsl}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal2.beds}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal2.occ}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-teal-600 dark:text-teal-400 bg-slate-300 dark:bg-slate-950">${divisionRrOcc}%</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal2.jeepTot}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-red-600 dark:text-red-400">${gTotal2.jeepBd}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-emerald-600 dark:text-emerald-400">${gTotal2.fsdY}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-slate-600 dark:text-slate-400">${gTotal2.fsdN}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal2.inJeep}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal2.inTrain}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-teal-100 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400">${displayTotal2.inTot}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal2.outJeep}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal2.outTrain}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-teal-100 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400">${displayTotal2.outTot}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal2.hqElec}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal2.hqDsl}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal2.osElec}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal2.osDsl}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal2.beds}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal2.occ}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-teal-600 dark:text-teal-400 bg-slate-300 dark:bg-slate-950">${divisionRrOcc}%</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal2.jeepTot}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-red-600 dark:text-red-400">${displayTotal2.jeepBd}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-emerald-600 dark:text-emerald-400">${displayTotal2.fsY}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-slate-600 dark:text-slate-400">${displayTotal2.fsdN}</td>
     </tr>`;
 
     document.getElementById('repTablePtCrew').innerHTML = table2HTML;
 
-   // --- POPULATE TABLE III (Lobby Performance Particulars Matrix - Deep Black Borders & Centered text) ---
+    // --- POPULATE TABLE III (Lobby Performance Particulars) ---
     let table3HTML = lobbies.map(l => {
         const d = agg[l];
+        let div = (tableModes[3] === 'avg' && d.count > 0) ? d.count : 1;
+
         const upPddAvg = d.pddUpCount > 0 ? Math.round(d.pddUpSum / d.pddUpCount) : 0;
         const dnPddAvg = d.pddDnCount > 0 ? Math.round(d.pddDnSum / d.pddDnCount) : 0;
-        
         const totalPddSum = d.pddUpSum + d.pddDnSum;
         const totalPddCount = d.pddUpCount + d.pddDnCount;
         const overallPddAvg = totalPddCount > 0 ? Math.round(totalPddSum / totalPddCount) : 0;
         
-        const pdd2hTotal = d.upPdd2 + d.dnPdd2;
+        const uPd2 = Math.round(d.upPdd2 / div);    const dPd2 = Math.round(d.dnPdd2 / div);    const pdd2hTotal = uPd2 + dPd2;
+        const ss12 = Math.round(d.soso12 / div);    const ss14 = Math.round(d.soso14 / div);
+        const sw12 = Math.round(d.sows12 / div);    const sw14 = Math.round(d.sows14 / div);
+        const tWor = Math.round(d.totalWor / div);
+        const mOn  = Math.round(d.manualSignOn / div);  const mOff = Math.round(d.manualSignOff / div);
 
-        gTotal3.pddUpSum += d.pddUpSum;         gTotal3.pddUpCount += d.pddUpCount;
-        gTotal3.pddDnSum += d.pddDnSum;         gTotal3.pddDnCount += d.pddDnCount;
-        gTotal3.pddOverallSum += totalPddSum;   gTotal3.pddOverallCount += totalPddCount;
+        if (d.count > 0) {
+            avgModePddUpSumOfRows += upPddAvg;
+            avgModePddDnSumOfRows += dnPddAvg;
+            avgModePddOverallSumOfRows += overallPddAvg;
+            activeLobbiesWithPdd++;
+        }
+
+        displayTotal3.highUp += uPd2;     displayTotal3.highDn += dPd2; displayTotal3.highTot += pdd2hTotal;
+        displayTotal3.soso12 += ss12;     displayTotal3.soso14 += ss14;
+        displayTotal3.sows12 += sw12;     displayTotal3.sows14 += sw14;
+        displayTotal3.totalWor += tWor;
+        displayTotal3.cmsOn += mOn;       displayTotal3.cmsOff += mOff;
         
-        gTotal3.highUp += d.upPdd2;             gTotal3.highDn += d.dnPdd2; gTotal3.highTot += pdd2hTotal;
-        gTotal3.soso12 += d.soso12;             gTotal3.soso14 += d.soso14;
-        gTotal3.sows12 += d.sows12;             gTotal3.sows14 += d.sows14;
-        gTotal3.totalWor += d.totalWor;
-        gTotal3.cmsOn += d.manualSignOn;        gTotal3.cmsOff += d.manualSignOff;
-        gTotal3.autoOverdue += d.autoSignalOverdue; gTotal3.crcOverdue += d.crcOverdue; gTotal3.pmeOverdue += d.pmeOverdue;
+        displayTotal3.autoOverdue += d.autoSignalOverdue; 
+        displayTotal3.crcOverdue += d.crcOverdue; 
+        displayTotal3.pmeOverdue += d.pmeOverdue;
 
         return `<tr class="hover:bg-slate-100 dark:hover:bg-slate-900/40 text-center text-xs h-9 transition-colors border border-black dark:border-slate-700">
             <td class="p-2 border border-black dark:border-slate-700 text-left font-bold bg-slate-100 dark:bg-slate-900/30 text-orange-600 dark:text-orange-400">${l}</td>
             <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${formatReportHhMm(upPddAvg)}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${formatReportHhMm(dnPddAvg)}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-orange-500/5 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400">${formatReportHhMm(overallPddAvg)}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-red-500 dark:text-red-400">${d.upPdd2}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-red-500 dark:text-red-400">${d.dnPdd2}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-red-500/5 dark:bg-red-950/20 text-red-600 dark:text-red-400">${pdd2hTotal}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.soso12}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.soso14}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.sows12}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.sows14}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-slate-200/40 dark:bg-slate-800/40 text-slate-800 dark:text-white">${d.totalWor}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.manualSignOn}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.manualSignOff}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-red-500 dark:text-red-400">${uPd2}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-red-500 dark:text-red-400">${dPd2}</td><td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-red-500/5 dark:bg-red-950/20 text-red-600 dark:text-red-400">${pdd2hTotal}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${ss12}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${ss14}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${sw12}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${sw14}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-slate-200/40 dark:bg-slate-800/40 text-slate-800 dark:text-white">${tWor}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${mOn}</td><td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${mOff}</td>
             <td class="p-2 border border-black dark:border-slate-700 font-mono font-semibold text-amber-600 dark:text-amber-400">${d.autoSignalOverdue}</td>
             <td class="p-2 border border-black dark:border-slate-700 font-mono font-semibold text-red-500 dark:text-red-400">${d.crcOverdue}</td>
             <td class="p-2 border border-black dark:border-slate-700 font-mono font-semibold text-red-600 dark:text-red-500">${d.pmeOverdue}</td>
         </tr>`;
     }).join('');
 
-    const divUpPddAvg = gTotal3.pddUpCount > 0 ? Math.round(gTotal3.pddUpSum / gTotal3.pddUpCount) : 0;
-    const divDnPddAvg = gTotal3.pddDnCount > 0 ? Math.round(gTotal3.pddDnSum / gTotal3.pddDnCount) : 0;
-    const divOverallPddAvg = gTotal3.pddOverallCount > 0 ? Math.round(gTotal3.pddOverallSum / gTotal3.pddOverallCount) : 0;
+    // Dynamic core mapping logic to compute accurate division mean PDD values regardless of active filter selection mode
+    let divUpPddAvg, divDnPddAvg, divOverallPddAvg;
+    if (tableModes[3] === 'avg') {
+        let denom = activeLobbiesWithPdd > 0 ? activeLobbiesWithPdd : 1;
+        divUpPddAvg = Math.round(avgModePddUpSumOfRows / denom);
+        divDnPddAvg = Math.round(avgModePddDnSumOfRows / denom);
+        divOverallPddAvg = Math.round(avgModePddOverallSumOfRows / denom);
+    } else {
+        divUpPddAvg = globalPddUpCount > 0 ? Math.round(globalPddUpSum / globalPddUpCount) : 0;
+        divDnPddAvg = globalPddDnCount > 0 ? Math.round(globalPddDnSum / globalPddDnCount) : 0;
+        divOverallPddAvg = globalPddOverallCount > 0 ? Math.round(globalPddOverallSum / globalPddOverallCount) : 0;
+    }
 
     table3HTML += `<tr class="bg-slate-200 dark:bg-slate-900 border-t-2 border-black dark:border-slate-700 text-center font-extrabold text-slate-800 dark:text-white text-xs h-9 shadow-inner border-2 border-black dark:border-slate-600">
         <td class="p-2 border border-black dark:border-slate-600 text-left text-emerald-700 dark:text-emerald-400 uppercase tracking-wider font-bold">TOTAL</td>
         <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${formatReportHhMm(divUpPddAvg)}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${formatReportHhMm(divDnPddAvg)}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400">${formatReportHhMm(divOverallPddAvg)}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal3.highUp}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal3.highDn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400">${gTotal3.highTot}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal3.soso12}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal3.soso14}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal3.sows12}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal3.sows14}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-slate-300 dark:bg-slate-800 text-slate-800 dark:text-slate-100">${gTotal3.totalWor}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal3.cmsOn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal3.cmsOff}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-amber-600 dark:text-amber-400">${gTotal3.autoOverdue}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-red-500 dark:text-red-400">${gTotal3.crcOverdue}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-red-600 dark:text-red-500">${gTotal3.pmeOverdue}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal3.highUp}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal3.highDn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400">${displayTotal3.highTot}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal3.soso12}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal3.soso14}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal3.sows12}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal3.sows14}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-slate-300 dark:bg-slate-800 text-slate-800 dark:text-slate-100">${displayTotal3.totalWor}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal3.cmsOn}</td><td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal3.cmsOff}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-amber-600 dark:text-amber-400">${displayTotal3.autoOverdue}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-red-500 dark:text-red-400">${displayTotal3.crcOverdue}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center text-red-600 dark:text-red-500">${displayTotal3.pmeOverdue}</td>
     </tr>`;
 
     document.getElementById('repTablePerformance').innerHTML = table3HTML;
-    // --- POPULATE TABLE IV (Mass Counselling Particulars Matrix - Deep Black Borders & Centered text) ---
+
+    // --- POPULATE TABLE IV (Mass Counselling Particulars Matrix) ---
     let table4HTML = lobbies.map(l => {
         const d = agg[l];
-        const rsValveRowTotal = d.rsValveLobby + d.rsValveLoco;
-        const massCounsRowTotal = d.massSessions + d.massClis + d.massLps + d.massLpss + d.massAlps;
+        let div = (tableModes[4] === 'avg' && d.count > 0) ? d.count : 1;
 
-        gTotal4.rsLobby += d.rsValveLobby;   gTotal4.rsLoco += d.rsValveLoco;   gTotal4.rsTotal += rsValveRowTotal;
-        gTotal4.sessions += d.massSessions;  gTotal4.clis += d.massClis;        gTotal4.lps += d.massLps;
-        gTotal4.lpss += d.massLpss;          gTotal4.alps += d.massAlps;        gTotal4.massTotal += massCounsRowTotal;
+        const rsLby = Math.round(d.rsValveLobby / div);   const rsLco = Math.round(d.rsValveLoco / div);
+        const rsValveRowTotal = rsLby + rsLco;
+        
+        const mSess = Math.round(d.massSessions / div);   const mCli = Math.round(d.massClis / div);
+        const mLp  = Math.round(d.massLps / div);        const mLps = Math.round(d.massLpss / div);
+        const mAlp = Math.round(d.massAlps / div);
+        const massCounsRowTotal = mSess + mCli + mLp + mLps + mAlp;
+
+        displayTotal4.rsLobby += rsLby;   displayTotal4.rsLoco += rsLco;   displayTotal4.rsTotal += rsValveRowTotal;
+        displayTotal4.sessions += mSess;  displayTotal4.clis += mCli;        displayTotal4.lps += mLp;
+        displayTotal4.lpss += mLps;          displayTotal4.alps += mAlp;        displayTotal4.massTotal += massCounsRowTotal;
 
         return `<tr class="hover:bg-slate-100 dark:hover:bg-slate-900/40 text-center text-xs h-9 transition-colors border border-black dark:border-slate-700">
             <td class="p-2 border border-black dark:border-slate-700 text-left font-bold bg-slate-100 dark:bg-slate-900/30 text-rose-600 dark:text-rose-400">${l}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.rsValveLobby}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.rsValveLoco}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${rsLby}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${rsLco}</td>
             <td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-rose-500/5 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400">${rsValveRowTotal}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.massSessions}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.massClis}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.massLps}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.massLpss}</td>
-            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${d.massAlps}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${mSess}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${mCli}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${mLp}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${mLps}</td>
+            <td class="p-2 border border-black dark:border-slate-700 font-mono text-slate-900 dark:text-slate-100">${mAlp}</td>
             <td class="p-2 border border-black dark:border-slate-700 font-mono font-bold bg-emerald-500/5 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400">${massCounsRowTotal}</td>
         </tr>`;
     }).join('');
 
-    // Table IV Grand Total Row with Centered Data and Solid Black Grids
     table4HTML += `<tr class="bg-slate-200 dark:bg-slate-900 border-t-2 border-black dark:border-slate-700 text-center font-extrabold text-slate-800 dark:text-white text-xs h-9 shadow-inner border-2 border-black dark:border-slate-600">
         <td class="p-2 border border-black dark:border-slate-600 text-left text-emerald-700 dark:text-emerald-400 uppercase tracking-wider font-bold">TOTAL</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal4.rsLobby}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal4.rsLoco}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400">${gTotal4.rsTotal}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal4.sessions}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal4.clis}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal4.lps}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal4.lpss}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${gTotal4.alps}</td>
-        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">${gTotal4.massTotal}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal4.rsLobby}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal4.rsLoco}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400">${displayTotal4.rsTotal}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal4.sessions}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal4.clis}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal4.lps}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal4.lpss}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center">${displayTotal4.alps}</td>
+        <td class="p-2 border border-black dark:border-slate-600 font-mono text-center bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">${displayTotal4.massTotal}</td>
     </tr>`;
 
     document.getElementById('repTableSafety').innerHTML = table4HTML;
 }
-
         // Master CSV Download Protocol mapping all 4 structural views sequentially
         function downloadStructuredReport() {
             let csv = "data:text/csv;charset=utf-8,";
