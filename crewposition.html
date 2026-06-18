@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Crew Position Form</title>
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --secondary-color: #3b82f6;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #cbd5e1;
+            --subfield-bg: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .form-container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            position: relative;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            border-left: 4px solid var(--secondary-color);
+            padding-left: 10px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #475569;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="time"],
+        input[type="date"],
+        select {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+            background-color: #fff;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .sub-fields-box {
+            background-color: var(--subfield-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #94a3b8;
+            margin-top: 5px;
+            grid-column: 1 / -1;
+        }
+
+        .sub-fields-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .lobby-section {
+            display: none;
+        }
+
+        .off-leave-section {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 25px;
+        }
+
+        .off-leave-section .section-title {
+            color: #991b1b;
+            border-left-color: #ef4444;
+        }
+
+        .submit-btn-container {
+            text-align: center;
+            margin-top: 35px;
+        }
+
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .submit-btn:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .show-block {
+            display: block !important;
+        }
+
+        /* Loading Spinner Overlay */
+        .loader {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.7);
+            border-radius: 12px;
+            z-index: 10;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* Modern Toast Notification Container */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        /* Toast Component */
+        .toast {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            color: #1e293b;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            font-size: 0.95rem;
+            font-weight: 500;
+            min-width: 320px;
+            max-width: 450px;
+            border-left: 5px solid #cbd5e1;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-success {
+            border-left-color: #10b981;
+        }
+
+        .toast-error {
+            border-left-color: #ef4444;
+        }
+
+        .toast-icon {
+            margin-right: 12px;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Toast Layout Container Element -->
+<div id="toastContainer" class="toast-container"></div>
+
+<div class="form-container">
+    <div id="loadingOverlay" class="loader">Processing request... Please wait...</div>
+
+    <h2>Crew Position Data Entry Form(Every 4 hours)</h2>
+     
+    <form id="crewPositionForm" onsubmit="handleFormSubmit(event)">
+         
+        <div class="section-title">Common Fields</div>
+        <div class="grid-container">
+            <div class="form-group">
+                <label for="positionDate">Date *</label>
+                <input type="date" id="positionDate" name="Date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="crewPositionTime">Crew Position Time *</label>
+                <select id="crewPositionTime" name="Crew Position Time" required onchange="toggleTimeParameters()">
+                    <option value="">-- Select Time --</option>
+                    <option value="00:00hrs">00:00hrs</option>
+                    <option value="04:00hrs">04:00hrs</option>
+                    <option value="08:00hrs">08:00hrs</option>
+                    <option value="12:00hrs">12:00hrs</option>
+                    <option value="16:00hrs">16:00hrs</option>
+                    <option value="20:00hrs">20:00hrs</option>
+                    <option value="24:00hrs">24:00hrs</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="lobbySelect">Lobby *</label>
+                <select id="lobbySelect" name="Lobby" required onchange="toggleLobbyFields()">
+                    <option value="">-- Select Lobby --</option>
+                    <option value="AKT">AKT</option>
+                    <option value="BJRI">BJRI</option>
+                    <option value="BRJN">BRJN</option>
+                    <option value="BSP">BSP</option>
+                    <option value="KHS">KHS</option>
+                    <option value="KRBA">KRBA</option>
+                    <option value="PND">PND</option>
+                    <option value="RIG">RIG</option>
+                    <option value="SDL">SDL</option>
+                    <option value="SJQ">SJQ</option>
+                    <option value="USL">USL</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="ccName">CC Name</label>
+                <input type="text" id="ccName" name="CC Name" placeholder="Enter CC Name">
+            </div>
+
+            <div class="form-group">
+                <label for="diName">DI Name</label>
+                <input type="text" id="diName" name="DI Name" placeholder="Enter DI Name">
+            </div>
+        </div>
+
+        <div id="section_AKT" class="lobby-section">
+            <div class="section-title">AKT Lobby Parameters</div>
+            <div class="grid-container">
+                <div class="form-group"><label>Total Number of UP TO (Incl. All except RHQ)</label><input type="number" name="Total Number of UP TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of DN TO (Incl. All except RHQ)</label><input type="number" name="Total Number of DN TO" value="0" min="0"></div>
+                <div class="form-group"><label>HQ Crew TO</label><input type="number" name="HQ Crew TO" value="0" min="0"></div>
+                <div class="form-group"><label>O/S Crew TO</label><input type="number" name="O/S Crew TO" value="0" min="0"></div>
+                 
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew TO Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>BSP</label><input type="number" name="OS TO BSP" value="0" min="0"></div>
+                        <div class="form-group"><label>KRBA</label><input type="number" name="OS TO KRBA" value="0" min="0"></div>
+                        <div class="form-group"><label>KHS</label><input type="number" name="OS TO KHS" value="0" min="0"></div>
+                        <div class="form-group"><label>RIG</label><input type="number" name="OS TO RIG" value="0" min="0"></div>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>Last UP TO Time</label><input type="time" name="Last UP TO Time"></div>
+                <div class="form-group"><label>Last DN TO Time</label><input type="time" name="Last DN TO Time"></div>
+                <div class="form-group"><label>Total Number of Shuttling TO</label><input type="number" name="Total Number of Shuttling TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Pilot TO</label><input type="number" name="Total Number of Pilot TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of TKE</label><input type="number" name="Total Number of TKE" value="0" min="0"></div>
+                <div class="form-group"><label>LP Available on Board with PR</label><input type="number" name="Total Number of LP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>LP PR Given</label><input type="number" name="Total Number of LP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>LP Anytime Available</label><input type="number" name="Total Number of LP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Available on Board with PR</label><input type="number" name="Total Number of ALP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>ALP PR Given</label><input type="number" name="Total Number of ALP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Anytime Available</label><input type="number" name="Total Number of ALP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of O/S Crew Set Available</label><input type="number" name="Total Number of O/S Crew Set Available" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew Set Available Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>BSP</label><input type="number" name="OS SET BSP" value="0" min="0"></div>
+                        <div class="form-group"><label>KRBA</label><input type="number" name="OS SET KRBA" value="0" min="0"></div>
+                        <div class="form-group"><label>KHS</label><input type="number" name="OS SET KHS" value="0" min="0"></div>
+                        <div class="form-group"><label>RIG</label><input type="number" name="OS SET RIG" value="0" min="0"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Total Double Head/Push Pull Loco run</label><input type="number" name="Total Number of Double Head/Push Pull Loco run" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Under Gear Check</label><input type="number" name="Total Number of Under Gear Check" value="0" min="0"></div>
+            </div>
+        </div>
+
+        <!-- ================= BJRI LOBBY FIELDS ================= -->
+        <div id="section_BJRI" class="lobby-section">
+            <div class="section-title">BJRI Lobby Parameters</div>
+            <div class="grid-container">
+                <div class="form-group"><label>Total Number of UP TO (Incl. All except RHQ)</label><input type="number" name="Total Number of UP TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of DN TO (Incl. All except RHQ)</label><input type="number" name="Total Number of DN TO" value="0" min="0"></div>
+                <div class="form-group"><label>HQ Crew TO</label><input type="number" name="HQ Crew TO" value="0" min="0"></div>
+                <div class="form-group"><label>O/S Crew TO</label><input type="number" name="O/S Crew TO" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew TO Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>SDL</label><input type="number" name="OS TO SDL" value="0" min="0"></div>
+                        <div class="form-group"><label>SJQ</label><input type="number" name="OS TO SJQ" value="0" min="0"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Last UP TO Time</label><input type="time" name="Last UP TO Time"></div>
+                <div class="form-group"><label>Last DN TO Time</label><input type="time" name="Last DN TO Time"></div>
+                <div class="form-group"><label>Total Number of Shuttling TO</label><input type="number" name="Total Number of Shuttling TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Pilot TO</label><input type="number" name="Total Number of Pilot TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Banking Engine TO</label><input type="number" name="Total Number of Banking Engine TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of TKE</label><input type="number" name="Total Number of TKE" value="0" min="0"></div>
+                <div class="form-group"><label>LP Available on Board with PR</label><input type="number" name="Total Number of LP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>LP PR Given</label><input type="number" name="Total Number of LP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>LP Anytime Available</label><input type="number" name="Total Number of LP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Available on Board with PR</label><input type="number" name="Total Number of ALP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>ALP PR Given</label><input type="number" name="Total Number of ALP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Anytime Available</label><input type="number" name="Total Number of ALP Anytime Available" value="0" min="0"></div>
+                
+                <div class="form-group"><label>LP PND LR available on Board</label><input type="number" name="Total Number of LP PND LR available on Board" value="0" min="0"></div>
+                <div class="form-group"><label>ALP PND LR available on Board</label><input type="number" name="Total Number of ALP PND LR available on Board" value="0" min="0"></div>
+                
+                <div class="form-group"><label>Total Number of O/S Crew Set Available</label><input type="number" name="Total Number of O/S Crew Set Available" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew Set Available Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>SDL</label><input type="number" name="OS SET SDL" value="0" min="0"></div>
+                        <div class="form-group"><label>SJQ</label><input type="number" name="OS SET SJQ" value="0" min="0"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Total Double Head/Push Pull Loco run</label><input type="number" name="Total Number of Double Head/Push Pull Loco run" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Under Gear Check</label><input type="number" name="Total Number of Under Gear Check" value="0" min="0"></div>
+            </div>
+        </div>
+
+        <!-- ================= BRJN LOBBY FIELDS ================= -->
+        <div id="section_BRJN" class="lobby-section">
+            <div class="section-title">BRJN Lobby Parameters</div>
+            <div class="grid-container">
+                <div class="form-group"><label>Total Number of UP TO (Incl. All except RHQ)</label><input type="number" name="Total Number of UP TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of DN TO (Incl. All except RHQ)</label><input type="number" name="Total Number of DN TO" value="0" min="0"></div>
+                <div class="form-group"><label>HQ Crew TO</label><input type="number" name="HQ Crew TO" value="0" min="0"></div>
+                <div class="form-group"><label>O/S Crew TO</label><input type="number" name="O/S Crew TO" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew TO Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>RIG</label><input type="number" name="OS TO RIG" value="0" min="0"></div>
+                        <div class="form-group"><label>ROU/JSG</label><input type="number" name="OS TO ROU JSG" value="0" min="0"></div>
+                        <div class="form-group"><label>SBP</label><input type="number" name="OS TO SBP" value="0" min="0"></div>
+                        <div class="form-group"><label>BSP</label><input type="number" name="OS TO BSP" value="0" min="0"></div>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>Last UP TO Time</label><input type="time" name="Last UP TO Time"></div>
+                <div class="form-group"><label>Last DN TO Time</label><input type="time" name="Last DN TO Time"></div>
+                <div class="form-group"><label>Total Number of Shuttling TO</label><input type="number" name="Total Number of Shuttling TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Pilot TO</label><input type="number" name="Total Number of Pilot TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Banking Engine TO</label><input type="number" name="Total Number of Banking Engine TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of TKE</label><input type="number" name="Total Number of TKE" value="0" min="0"></div>
+                <div class="form-group"><label>LP Available on Board with PR</label><input type="number" name="Total Number of LP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>LP PR Given</label><input type="number" name="Total Number of LP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>LP Anytime Available</label><input type="number" name="Total Number of LP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Available on Board with PR</label><input type="number" name="Total Number of ALP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>ALP PR Given</label><input type="number" name="Total Number of ALP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Anytime Available</label><input type="number" name="Total Number of ALP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>LP BSP LR available on Board</label><input type="number" name="Total Number of LP BSP LR available on Board" value="0" min="0"></div>
+                <div class="form-group"><label>ALP BSP LR available on Board</label><input type="number" name="Total Number of ALP BSP LR available on Board" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of O/S Crew Set Available</label><input type="number" name="Total Number of O/S Crew Set Available" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew Set Available Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>RIG</label><input type="number" name="OS SET RIG" value="0" min="0"></div>
+                        <div class="form-group"><label>ROU/JSG</label><input type="number" name="OS SET ROU JSG" value="0" min="0"></div>
+                        <div class="form-group"><label>SBP</label><input type="number" name="OS SET SBP" value="0" min="0"></div>
+                        <div class="form-group"><label>BSP</label><input type="number" name="OS SET BSP" value="0" min="0"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Total Double Head/Push Pull Loco run</label><input type="number" name="Total Number of Double Head/Push Pull Loco run" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Under Gear Check</label><input type="number" name="Total Number of Under Gear Check" value="0" min="0"></div>
+            </div>
+        </div>
+
+        <!-- ================= BSP LOBBY FIELDS ================= -->
+        <div id="section_BSP" class="lobby-section">
+            <div class="section-title">BSP Lobby Parameters</div>
+            <div class="grid-container">
+                <div class="form-group"><label>Total Number of UP TO (Incl. All except RHQ)</label><input type="number" name="Total Number of UP TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of DN TO (Incl. All except RHQ)</label><input type="number" name="Total Number of DN TO" value="0" min="0"></div>
+                <div class="form-group"><label>HQ Crew TO</label><input type="number" name="HQ Crew TO" value="0" min="0"></div>
+                <div class="form-group"><label>O/S Crew TO</label><input type="number" name="O/S Crew TO" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew TO Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>RIG</label><input type="number" name="OS TO RIG" value="0" min="0"></div>
+                        <div class="form-group"><label>DBEC</label><input type="number" name="OS TO DBEC" value="0" min="0"></div>
+                        <div class="form-group"><label>KRBA</label><input type="number" name="OS TO KRBA" value="0" min="0"></div>
+                        <div class="form-group"><label>SDL</label><input type="number" name="OS TO SDL" value="0" min="0"></div>
+                        <div class="form-group"><label>DGG</label><input type="number" name="OS TO DGG" value="0" min="0"></div>
+                        <div class="form-group"><label>BYT</label><input type="number" name="OS TO BYT" value="0" min="0"></div>
+                        <div class="form-group"><label>KHS</label><input type="number" name="OS TO KHS" value="0" min="0"></div>
+                        <div class="form-group"><label>PND</label><input type="number" name="OS TO PND" value="0" min="0"></div>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>Total DGG Incoming Crew</label><input type="number" name="Total Number of DGG Incoming Crew" value="0" min="0"></div>
+                <div class="form-group"><label>Total DGG Outgoing Crew</label><input type="number" name="Total Number of DGG Outgoing Crew" value="0" min="0"></div>
+                <div class="form-group"><label>Last UP TO Time</label><input type="time" name="Last UP TO Time"></div>
+                <div class="form-group"><label>Last DN TO Time</label><input type="time" name="Last DN TO Time"></div>
+                <div class="form-group"><label>Total Number of Shuttling TO</label><input type="number" name="Total Number of Shuttling TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Pilot TO</label><input type="number" name="Total Number of Pilot TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of TKE</label><input type="number" name="Total Number of TKE" value="0" min="0"></div>
+                <div class="form-group"><label>LP Available on Board with PR</label><input type="number" name="Total Number of LP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>LP PR Given</label><input type="number" name="Total Number of LP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>LP Anytime Available</label><input type="number" name="Total Number of LP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Available on Board with PR</label><input type="number" name="Total Number of ALP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>ALP PR Given</label><input type="number" name="Total Number of ALP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Anytime Available</label><input type="number" name="Total Number of ALP Anytime Available" value="0" min="0"></div>
+                
+                <div class="form-group"><label>LP VYAS LR available on Board</label><input type="number" name="Total Number of LP VYAS LR available on Board" value="0" min="0"></div>
+                <div class="form-group"><label>ALP VYAS LR available on Board</label><input type="number" name="Total Number of ALP VYAS LR available on Board" value="0" min="0"></div>
+                
+                <div class="form-group"><label>Total Number of O/S Crew Set Available</label><input type="number" name="Total Number of O/S Crew Set Available" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew Set Available Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>RIG</label><input type="number" name="OS SET RIG" value="0" min="0"></div>
+                        <div class="form-group"><label>DBEC</label><input type="number" name="OS SET DBEC" value="0" min="0"></div>
+                        <div class="form-group"><label>KRBA</label><input type="number" name="OS SET KRBA" value="0" min="0"></div>
+                        <div class="form-group"><label>SDL</label><input type="number" name="OS SET SDL" value="0" min="0"></div>
+                        <div class="form-group"><label>DGG</label><input type="number" name="OS SET DGG" value="0" min="0"></div>
+                        <div class="form-group"><label>BYT</label><input type="number" name="OS SET BYT" value="0" min="0"></div>
+                        <div class="form-group"><label>KHS</label><input type="number" name="OS SET KHS" value="0" min="0"></div>
+                        <div class="form-group"><label>PND</label><input type="number" name="OS SET PND" value="0" min="0"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Total Double Head/Push Pull Loco run</label><input type="number" name="Total Number of Double Head/Push Pull Loco run" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Under Gear Check</label><input type="number" name="Total Number of Under Gear Check" value="0" min="0"></div>
+            </div>
+        </div>
+
+        <!-- ================= KHS LOBBY FIELDS ================= -->
+        <div id="section_KHS" class="lobby-section">
+            <div class="section-title">KHS Lobby Parameters</div>
+            <div class="grid-container">
+                <div class="form-group"><label>Total Number of UP TO (Incl. All except RHQ)</label><input type="number" name="Total Number of UP TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of DN TO (Incl. All except RHQ)</label><input type="number" name="Total Number of DN TO" value="0" min="0"></div>
+                <div class="form-group"><label>HQ Crew TO</label><input type="number" name="HQ Crew TO" value="0" min="0"></div>
+                <div class="form-group"><label>O/S Crew TO</label><input type="number" name="O/S Crew TO" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew TO Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>BSP</label><input type="number" name="OS TO BSP" value="0" min="0"></div>
+                        <div class="form-group"><label>AKT</label><input type="number" name="OS TO AKT" value="0" min="0"></div>
+                        <div class="form-group"><label>KRBA</label><input type="number" name="OS TO KRBA" value="0" min="0"></div>
+                        <div class="form-group"><label>RIG</label><input type="number" name="OS TO RIG" value="0" min="0"></div>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>Last UP TO Time</label><input type="time" name="Last UP TO Time"></div>
+                <div class="form-group"><label>Last DN TO Time</label><input type="time" name="Last DN TO Time"></div>
+                <div class="form-group"><label>Total Number of Shuttling TO</label><input type="number" name="Total Number of Shuttling TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Pilot TO</label><input type="number" name="Total Number of Pilot TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Banking Engine TO</label><input type="number" name="Total Number of Banking Engine TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of TKE</label><input type="number" name="Total Number of TKE" value="0" min="0"></div>
+                <div class="form-group"><label>LP Available on Board with PR</label><input type="number" name="Total Number of LP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>LP PR Given</label><input type="number" name="Total Number of LP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>LP Anytime Available</label><input type="number" name="Total Number of LP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Available on Board with PR</label><input type="number" name="Total Number of ALP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>ALP PR Given</label><input type="number" name="Total Number of ALP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Anytime Available</label><input type="number" name="Total Number of ALP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of O/S Crew Set Available</label><input type="number" name="Total Number of O/S Crew Set Available" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew Set Available Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>BSP</label><input type="number" name="OS SET BSP" value="0" min="0"></div>
+                        <div class="form-group"><label>AKT</label><input type="number" name="OS SET AKT" value="0" min="0"></div>
+                        <div class="form-group"><label>KRBA</label><input type="number" name="OS SET KRBA" value="0" min="0"></div>
+                        <div class="form-group"><label>RIG</label><input type="number" name="OS SET RIG" value="0" min="0"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Total Double Head/Push Pull Loco run</label><input type="number" name="Total Number of Double Head/Push Pull Loco run" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Under Gear Check</label><input type="number" name="Total Number of Under Gear Check" value="0" min="0"></div>
+            </div>
+        </div>
+
+        <!-- ================= KRBA LOBBY FIELDS ================= -->
+        <div id="section_KRBA" class="lobby-section">
+            <div class="section-title">KRBA Lobby Parameters</div>
+            <div class="grid-container">
+                <div class="form-group"><label>Total Number of UP TO (Incl. All except RHQ)</label><input type="number" name="Total Number of UP TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of DN TO (Incl. All except RHQ)</label><input type="number" name="Total Number of DN TO" value="0" min="0"></div>
+                <div class="form-group"><label>HQ Crew TO</label><input type="number" name="HQ Crew TO" value="0" min="0"></div>
+                <div class="form-group"><label>O/S Crew TO</label><input type="number" name="O/S Crew TO" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew TO Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>BSP</label><input type="number" name="OS TO BSP" value="0" min="0"></div>
+                        <div class="form-group"><label>KHS</label><input type="number" name="OS TO KHS" value="0" min="0"></div>
+                        <div class="form-group"><label>DBEC</label><input type="number" name="OS TO DBEC" value="0" min="0"></div>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>Total DBEC Incoming Crew</label><input type="number" name="Total Number of DBEC Incoming Crew" value="0" min="0"></div>
+                <div class="form-group"><label>Total DBEC Outgoing Crew</label><input type="number" name="Total Number of DBEC Outgoing Crew" value="0" min="0"></div>
+                <div class="form-group"><label>Last UP TO Time</label><input type="time" name="Last UP TO Time"></div>
+                <div class="form-group"><label>Last DN TO Time</label><input type="time" name="Last DN TO Time"></div>
+                <div class="form-group"><label>Total Number of Shuttling TO</label><input type="number" name="Total Number of Shuttling TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Pilot TO</label><input type="number" name="Total Number of Pilot TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of TKE</label><input type="number" name="Total Number of TKE" value="0" min="0"></div>
+                <div class="form-group"><label>LP Available on Board with PR</label><input type="number" name="Total Number of LP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>LP PR Given</label><input type="number" name="Total Number of LP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>LP Anytime Available</label><input type="number" name="Total Number of LP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Available on Board with PR</label><input type="number" name="Total Number of ALP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>ALP PR Given</label><input type="number" name="Total Number of ALP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Anytime Available</label><input type="number" name="Total Number of ALP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of O/S Crew Set Available</label><input type="number" name="Total Number of O/S Crew Set Available" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew Set Available Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>BSP</label><input type="number" name="OS SET BSP" value="0" min="0"></div>
+                        <div class="form-group"><label>KHS</label><input type="number" name="OS SET KHS" value="0" min="0"></div>
+                        <div class="form-group"><label>DBEC</label><input type="number" name="OS SET DBEC" value="0" min="0"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Total Double Head/Push Pull Loco run</label><input type="number" name="Total Number of Double Head/Push Pull Loco run" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Under Gear Check</label><input type="number" name="Total Number of Under Gear Check" value="0" min="0"></div>
+            </div>
+        </div>
+
+        <!-- ================= PND LOBBY FIELDS ================= -->
+        <div id="section_PND" class="lobby-section">
+            <div class="section-title">PND Lobby Parameters</div>
+            <div class="grid-container">
+                <div class="form-group"><label>Total Number of UP TO (Incl. All except RHQ)</label><input type="number" name="Total Number of UP TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of DN TO (Incl. All except RHQ)</label><input type="number" name="Total Number of DN TO" value="0" min="0"></div>
+                <div class="form-group"><label>HQ Crew TO</label><input type="number" name="HQ Crew TO" value="0" min="0"></div>
+                <div class="form-group"><label>O/S Crew TO</label><input type="number" name="O/S Crew TO" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew TO Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>USL</label><input type="number" name="OS TO USL" value="0" min="0"></div>
+                        <div class="form-group"><label>BYT</label><input type="number" name="OS TO BYT" value="0" min="0"></div>
+                        <div class="form-group"><label>SDL</label><input type="number" name="OS TO SDL" value="0" min="0"></div>
+                        <div class="form-group"><label>BJRI</label><input type="number" name="OS TO BJRI" value="0" min="0"></div>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>Last UP TO Time</label><input type="time" name="Last UP TO Time"></div>
+                <div class="form-group"><label>Last DN TO Time</label><input type="time" name="Last DN TO Time"></div>
+                <div class="form-group"><label>Total Number of Shuttling TO</label><input type="number" name="Total Number of Shuttling TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Pilot TO</label><input type="number" name="Total Number of Pilot TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Banking Engine TO</label><input type="number" name="Total Number of Banking Engine TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of TKE</label><input type="number" name="Total Number of TKE" value="0" min="0"></div>
+                <div class="form-group"><label>LP Available on Board with PR</label><input type="number" name="Total Number of LP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>LP PR Given</label><input type="number" name="Total Number of LP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>LP Anytime Available</label><input type="number" name="Total Number of LP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Available on Board with PR</label><input type="number" name="Total Number of ALP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>ALP PR Given</label><input type="number" name="Total Number of ALP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Anytime Available</label><input type="number" name="Total Number of ALP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of O/S Crew Set Available</label><input type="number" name="Total Number of O/S Crew Set Available" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew Set Available Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>USL</label><input type="number" name="OS SET USL" value="0" min="0"></div>
+                        <div class="form-group"><label>BYT</label><input type="number" name="OS SET BYT" value="0" min="0"></div>
+                        <div class="form-group"><label>SDL</label><input type="number" name="OS SET SDL" value="0" min="0"></div>
+                        <div class="form-group"><label>BJRI</label><input type="number" name="OS SET BJRI" value="0" min="0"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Total Double Head/Push Pull Loco run</label><input type="number" name="Total Number of Double Head/Push Pull Loco run" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Under Gear Check</label><input type="number" name="Total Number of Under Gear Check" value="0" min="0"></div>
+            </div>
+        </div>
+
+        <!-- ================= RIG LOBBY FIELDS ================= -->
+        <div id="section_RIG" class="lobby-section">
+            <div class="section-title">RIG Lobby Parameters</div>
+            <div class="grid-container">
+                <div class="form-group"><label>Total Number of UP TO (Incl. All except RHQ)</label><input type="number" name="Total Number of UP TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of DN TO (Incl. All except RHQ)</label><input type="number" name="Total Number of DN TO" value="0" min="0"></div>
+                <div class="form-group"><label>HQ Crew TO</label><input type="number" name="HQ Crew TO" value="0" min="0"></div>
+                <div class="form-group"><label>O/S Crew TO</label><input type="number" name="O/S Crew TO" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew TO Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>BSP</label><input type="number" name="OS TO BSP" value="0" min="0"></div>
+                        <div class="form-group"><label>BRJN</label><input type="number" name="OS TO BRJN" value="0" min="0"></div>
+                        <div class="form-group"><label>DBEC</label><input type="number" name="OS TO DBEC" value="0" min="0"></div>
+                        <div class="form-group"><label>JSG</label><input type="number" name="OS TO JSG" value="0" min="0"></div>
+                        <div class="form-group"><label>BYT</label><input type="number" name="OS TO BYT" value="0" min="0"></div>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>Total DBEC Incoming Crew</label><input type="number" name="Total Number of DBEC Incoming Crew" value="0" min="0"></div>
+                <div class="form-group"><label>Total DBEC Outgoing Crew</label><input type="number" name="Total Number of DBEC Outgoing Crew" value="0" min="0"></div>
+                <div class="form-group"><label>Last UP TO Time</label><input type="time" name="Last UP TO Time"></div>
+                <div class="form-group"><label>Last DN TO Time</label><input type="time" name="Last DN TO Time"></div>
+                <div class="form-group"><label>Total Number of Shuttling TO</label><input type="number" name="Total Number of Shuttling TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Pilot TO</label><input type="number" name="Total Number of Pilot TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of TKE</label><input type="number" name="Total Number of TKE" value="0" min="0"></div>
+                <div class="form-group"><label>LP Available on Board with PR</label><input type="number" name="Total Number of LP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>LP PR Given</label><input type="number" name="Total Number of LP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>LP Anytime Available</label><input type="number" name="Total Number of LP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Available on Board with PR</label><input type="number" name="Total Number of ALP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>ALP PR Given</label><input type="number" name="Total Number of ALP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Anytime Available</label><input type="number" name="Total Number of ALP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of O/S Crew Set Available</label><input type="number" name="Total Number of O/S Crew Set Available" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew Set Available Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>BSP</label><input type="number" name="OS SET BSP" value="0" min="0"></div>
+                        <div class="form-group"><label>BRJN</label><input type="number" name="OS SET BRJN" value="0" min="0"></div>
+                        <div class="form-group"><label>DBEC</label><input type="number" name="OS SET DBEC" value="0" min="0"></div>
+                        <div class="form-group"><label>JSG</label><input type="number" name="OS SET JSG" value="0" min="0"></div>
+                        <div class="form-group"><label>BYT</label><input type="number" name="OS SET BYT" value="0" min="0"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Total Double Head/Push Pull Loco run</label><input type="number" name="Total Number of Double Head/Push Pull Loco run" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Under Gear Check</label><input type="number" name="Total Number of Under Gear Check" value="0" min="0"></div>
+            </div>
+        </div>
+
+        <!-- ================= SDL LOBBY FIELDS ================= -->
+        <div id="section_SDL" class="lobby-section">
+            <div class="section-title">SDL Lobby Parameters</div>
+            <div class="grid-container">
+                <div class="form-group"><label>Total Number of UP TO (Incl. All except RHQ)</label><input type="number" name="Total Number of UP TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of DN TO (Incl. All except RHQ)</label><input type="number" name="Total Number of DN TO" value="0" min="0"></div>
+                <div class="form-group"><label>HQ Crew TO</label><input type="number" name="HQ Crew TO" value="0" min="0"></div>
+                <div class="form-group"><label>O/S Crew TO</label><input type="number" name="O/S Crew TO" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew TO Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>USL</label><input type="number" name="OS TO USL" value="0" min="0"></div>
+                        <div class="form-group"><label>PND</label><input type="number" name="OS TO PND" value="0" min="0"></div>
+                        <div class="form-group"><label>SJQ</label><input type="number" name="OS TO SJQ" value="0" min="0"></div>
+                        <div class="form-group"><label>BJRI</label><input type="number" name="OS TO BJRI" value="0" min="0"></div>
+                        <div class="form-group"><label>SGO</label><input type="number" name="OS TO SGO" value="0" min="0"></div>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>Total SGO Incoming Crew</label><input type="number" name="Total Number of SGO Incoming Crew" value="0" min="0"></div>
+                <div class="form-group"><label>Total SGO Outgoing Crew</label><input type="number" name="Total Number of SGO Outgoing Crew" value="0" min="0"></div>
+                <div class="form-group"><label>Last UP TO Time</label><input type="time" name="Last UP TO Time"></div>
+                <div class="form-group"><label>Last DN TO Time</label><input type="time" name="Last DN TO Time"></div>
+                <div class="form-group"><label>Total Number of Shuttling TO</label><input type="number" name="Total Number of Shuttling TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Pilot TO</label><input type="number" name="Total Number of Pilot TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Banking Engine TO</label><input type="number" name="Total Number of Banking Engine TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of TKE</label><input type="number" name="Total Number of TKE" value="0" min="0"></div>
+                <div class="form-group"><label>LP Available on Board with PR</label><input type="number" name="Total Number of LP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>LP PR Given</label><input type="number" name="Total Number of LP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>LP Anytime Available</label><input type="number" name="Total Number of LP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Available on Board with PR</label><input type="number" name="Total Number of ALP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>ALP PR Given</label><input type="number" name="Total Number of ALP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Anytime Available</label><input type="number" name="Total Number of ALP Anytime Available" value="0" min="0"></div> 
+                <div class="form-group"><label>LP S/BULLET LR available on Board</label><input type="number" name="Total Number of LP S/BULLET LR available on Board" value="0" min="0"></div>
+                <div class="form-group"><label>ALP S/BULLET LR available on Board</label><input type="number" name="Total Number of ALP S/BULLET LR available on Board" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of O/S Crew Set Available</label><input type="number" name="Total Number of O/S Crew Set Available" value="0" min="0"></div>
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew Set Available Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>USL</label><input type="number" name="OS SET USL" value="0" min="0"></div>
+                        <div class="form-group"><label>PND</label><input type="number" name="OS SET PND" value="0" min="0"></div>
+                        <div class="form-group"><label>SJQ</label><input type="number" name="OS SET SJQ" value="0" min="0"></div>
+                        <div class="form-group"><label>BJRI</label><input type="number" name="OS SET BJRI" value="0" min="0"></div>
+                        <div class="form-group"><label>SGO</label><input type="number" name="OS SET SGO" value="0" min="0"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Total Double Head/Push Pull Loco run</label><input type="number" name="Total Number of Double Head/Push Pull Loco run" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Under Gear Check</label><input type="number" name="Total Number of Under Gear Check" value="0" min="0"></div>
+            </div>
+        </div>
+
+        <div id="section_SJQ" class="lobby-section">
+            <div class="section-title">SJQ Lobby Parameters</div>
+            <div class="grid-container">
+                <div class="form-group"><label>Total Number of UP TO (Incl. All except RHQ)</label><input type="number" name="Total Number of UP TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of DN TO (Incl. All except RHQ)</label><input type="number" name="Total Number of DN TO" value="0" min="0"></div>
+                <div class="form-group"><label>HQ Crew TO</label><input type="number" name="HQ Crew TO" value="0" min="0"></div>
+                <div class="form-group"><label>O/S Crew TO</label><input type="number" name="O/S Crew TO" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew TO Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>BJRI</label><input type="number" name="OS TO BJRI" value="0" min="0"></div>
+                        <div class="form-group"><label>SDL</label><input type="number" name="OS TO SDL" value="0" min="0"></div>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>Last UP TO Time</label><input type="time" name="Last UP TO Time"></div>
+                <div class="form-group"><label>Last DN TO Time</label><input type="time" name="Last DN TO Time"></div>
+                <div class="form-group"><label>Total Number of Shuttling TO</label><input type="number" name="Total Number of Shuttling TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Pilot TO</label><input type="number" name="Total Number of Pilot TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of TKE</label><input type="number" name="Total Number of TKE" value="0" min="0"></div>
+                <div class="form-group"><label>LP Available on Board with PR</label><input type="number" name="Total Number of LP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>LP PR Given</label><input type="number" name="Total Number of LP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>LP Anytime Available</label><input type="number" name="Total Number of LP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Available on Board with PR</label><input type="number" name="Total Number of ALP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>ALP PR Given</label><input type="number" name="Total Number of ALP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Anytime Available</label><input type="number" name="Total Number of ALP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of O/S Crew Set Available</label><input type="number" name="Total Number of O/S Crew Set Available" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew Set Available Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>BJRI</label><input type="number" name="OS SET BJRI" value="0" min="0"></div>
+                        <div class="form-group"><label>SDL</label><input type="number" name="OS SET SDL" value="0" min="0"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Total Double Head/Push Pull Loco run</label><input type="number" name="Total Number of Double Head/Push Pull Loco run" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Under Gear Check</label><input type="number" name="Total Number of Under Gear Check" value="0" min="0"></div>
+            </div>
+        </div>
+
+        <div id="section_USL" class="lobby-section">
+            <div class="section-title">USL Lobby Parameters</div>
+            <div class="grid-container">
+                <div class="form-group"><label>Total Number of UP TO (Incl. All except RHQ)</label><input type="number" name="Total Number of UP TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of DN TO (Incl. All except RHQ)</label><input type="number" name="Total Number of DN TO" value="0" min="0"></div>
+                <div class="form-group"><label>HQ Crew TO</label><input type="number" name="HQ Crew TO" value="0" min="0"></div>
+                <div class="form-group"><label>O/S Crew TO</label><input type="number" name="O/S Crew TO" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew TO Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>PND</label><input type="number" name="OS TO PND" value="0" min="0"></div>
+                        <div class="form-group"><label>SDL</label><input type="number" name="OS TO SDL" value="0" min="0"></div>
+                        <div class="form-group"><label>BYT</label><input type="number" name="OS TO BYT" value="0" min="0"></div>
+                        <div class="form-group"><label>R</label><input type="number" name="OS TO R" value="0" min="0"></div>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>Total NKJ Incoming Crew</label><input type="number" name="Total Number of NKJ Incoming Crew" value="0" min="0"></div>
+                <div class="form-group"><label>Total NKJ Outgoing Crew</label><input type="number" name="Total Number of NKJ Outgoing Crew" value="0" min="0"></div>
+                <div class="form-group"><label>Last UP TO Time</label><input type="time" name="Last UP TO Time"></div>
+                <div class="form-group"><label>Last DN TO Time</label><input type="time" name="Last DN TO Time"></div>
+                <div class="form-group"><label>Total Number of Shuttling TO</label><input type="number" name="Total Number of Shuttling TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Pilot TO</label><input type="number" name="Total Number of Pilot TO" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of TKE</label><input type="number" name="Total Number of TKE" value="0" min="0"></div>
+                <div class="form-group"><label>LP Available on Board with PR</label><input type="number" name="Total Number of LP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>LP PR Given</label><input type="number" name="Total Number of LP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>LP Anytime Available</label><input type="number" name="Total Number of LP Anytime Available" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Available on Board with PR</label><input type="number" name="Total Number of ALP Available on Board with PR" value="0" min="0"></div>
+                <div class="form-group"><label>ALP PR Given</label><input type="number" name="Total Number of ALP PR Given" value="0" min="0"></div>
+                <div class="form-group"><label>ALP Anytime Available</label><input type="number" name="Total Number of ALP Anytime Available" value="0" min="0"></div>
+                
+                <div class="form-group"><label>LP ARPA LR available on Board</label><input type="number" name="Total Number of LP ARPA LR available on Board" value="0" min="0"></div>
+                <div class="form-group"><label>ALP ARPA LR available on Board</label><input type="number" name="Total Number of ALP ARPA LR available on Board" value="0" min="0"></div>
+                
+                <div class="form-group"><label>Total Number of O/S Crew Set Available</label><input type="number" name="Total Number of O/S Crew Set Available" value="0" min="0"></div>
+
+                <div class="sub-fields-box">
+                    <label><strong>O/S Crew Set Available Bifurcation:</strong></label>
+                    <div class="sub-fields-grid">
+                        <div class="form-group"><label>PND</label><input type="number" name="OS SET PND" value="0" min="0"></div>
+                        <div class="form-group"><label>SDL</label><input type="number" name="OS SET SDL" value="0" min="0"></div>
+                        <div class="form-group"><label>BYT</label><input type="number" name="OS SET BYT" value="0" min="0"></div>
+                        <div class="form-group"><label>R</label><input type="number" name="OS SET R" value="0" min="0"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Total Double Head/Push Pull Loco run</label><input type="number" name="Total Number of Double Head/Push Pull Loco run" value="0" min="0"></div>
+                <div class="form-group"><label>Total Number of Under Gear Check</label><input type="number" name="Total Number of Under Gear Check" value="0" min="0"></div>
+            </div>
+        </div>
+
+        <div id="offLeaveSection" class="off-leave-section">
+            <div class="section-title">OFF Leave Parameters (Only for 00:00hrs)</div>
+            <div class="grid-container">
+                <div class="form-group"><label>OFF Leave LP 02:00hrs</label><input type="number" name="OFF Leave LP 02:00hrs" value="0" min="0"></div>
+                <div class="form-group"><label>OFF Leave LP 06:00hrs</label><input type="number" name="OFF Leave LP 06:00hrs" value="0" min="0"></div>
+                <div class="form-group"><label>OFF Leave ALP 02:00hrs</label><input type="number" name="OFF Leave ALP 02:00hrs" value="0" min="0"></div>
+                <div class="form-group"><label>OFF Leave ALP 06:00hrs</label><input type="number" name="OFF Leave ALP 06:00hrs" value="0" min="0"></div>
+            </div>
+        </div>
+
+        <div class="submit-btn-container">
+            <button type="submit" id="submitBtn" class="submit-btn">Submit Data</button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwqc0lunBliWbQrPf9extX3TYeQr5M3R227ouNeGUpN1EPrg3r7SUyrGQQJk7E4VKk_BA/exec";
+
+    window.addEventListener('DOMContentLoaded', (event) => {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('positionDate').value = today;
+    });
+
+    const activeLobbies = ['AKT', 'BJRI', 'BRJN', 'BSP', 'KHS', 'KRBA', 'PND', 'RIG', 'SDL', 'SJQ', 'USL'];
+
+    function toggleLobbyFields() {
+        const selectedLobby = document.getElementById('lobbySelect').value;
+        
+        document.querySelectorAll('.lobby-section').forEach(section => {
+            section.classList.remove('show-block');
+        });
+
+        if (activeLobbies.includes(selectedLobby)) {
+            const targetSection = document.getElementById('section_' + selectedLobby);
+            if (targetSection) {
+                targetSection.classList.add('show-block');
+            }
+        }
+        toggleTimeParameters();
+    }
+
+    function toggleTimeParameters() {
+        const selectedTime = document.getElementById('crewPositionTime').value;
+        const selectedLobby = document.getElementById('lobbySelect').value;
+        const offLeaveSec = document.getElementById('offLeaveSection');
+
+        if (selectedTime === '00:00hrs' && activeLobbies.includes(selectedLobby)) {
+            offLeaveSec.classList.add('show-block');
+        } else {
+            offLeaveSec.classList.remove('show-block');
+        }
+    }
+
+    // Helper function to render modern professional notifications
+    function showToast(message, type = "success") {
+        const container = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+        toast.className = `toast toast-${type}`;
+        
+        // Define clean modern icons based on notification status type
+        const icon = type === "success" ? "&#10004;" : "&#9888;";
+        
+        toast.innerHTML = `<span class="toast-icon">${icon}</span> <span>${message}</span>`;
+        container.appendChild(toast);
+
+        // Trigger animation entry sequence
+        setTimeout(() => { toast.classList.add("show"); }, 50);
+
+        // Automatically clear notification after 4 seconds
+        setTimeout(() => {
+            toast.classList.remove("show");
+            setTimeout(() => { toast.remove(); }, 300);
+        }, 4000);
+    }
+
+    // Google Sheets Integration Logic
+    function handleFormSubmit(event) {
+        event.preventDefault();
+        
+        const form = document.getElementById('crewPositionForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loader = document.getElementById('loadingOverlay');
+        const selectedLobby = document.getElementById('lobbySelect').value;
+        
+        loader.style.display = 'flex';
+        submitBtn.disabled = true;
+
+        const formData = new FormData();
+        
+        formData.append("Date", form.elements["Date"].value);
+        formData.append("Crew Position Time", form.elements["Crew Position Time"].value);
+        formData.append("Lobby", form.elements["Lobby"].value);
+        formData.append("CC Name", form.elements["CC Name"].value);
+        formData.append("DI Name", form.elements["DI Name"].value);
+
+        const lobbySection = document.getElementById("section_" + selectedLobby);
+        if (lobbySection) {
+            const inputs = lobbySection.querySelectorAll("input, select");
+            inputs.forEach(input => {
+                formData.append(input.name, input.value);
+            });
+        }
+
+        const selectedTime = form.elements["Crew Position Time"].value;
+        if (selectedTime === '00:00hrs') {
+            const offLeaveSec = document.getElementById('offLeaveSection');
+            const offInputs = offLeaveSec.querySelectorAll("input");
+            offInputs.forEach(input => {
+                formData.append(input.name, input.value);
+            });
+        }
+
+        const searchParams = new URLSearchParams(formData);
+
+        fetch(WEB_APP_URL + "?" + searchParams.toString(), {
+            method: "POST"
+        })
+        .then(response => response.json())
+        .then(data => {
+            loader.style.display = 'none';
+            submitBtn.disabled = false;
+            
+            if (data.result === "success") {
+                // Call premium toast notification
+                showToast(`Data successfully recorded into the ${selectedLobby} worksheet.`, "success");
+                form.reset(); 
+                document.getElementById('positionDate').value = new Date().toISOString().split('T')[0]; 
+                toggleLobbyFields(); 
+            } else {
+                showToast(`Execution Error: ${data.error}`, "error");
+            }
+        })
+        .catch(error => {
+            loader.style.display = 'none';
+            submitBtn.disabled = false;
+            console.error("Submission Error:", error);
+            showToast("Network Error: Failed to establish connection with the database engine.", "error");
+        });
+    }
+</script>
+
+</body>
+</html>
