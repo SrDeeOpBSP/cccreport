@@ -1613,27 +1613,66 @@ function calculateKpiDashboard() {
     document.getElementById('subKpiCrcOverdue').innerText = crcOverdues;
     document.getElementById('subKpiAutoOverdue').innerText = autoSignalOverdues;
 
-    // Defaulter Check Layout
+    // Defaulter Check Layout (Enhanced Date-Wise Tracking)
     const ALL_DIVISION_LOBBIES = ['AKT', 'BJRI', 'BRJN', 'BSP', 'KHS', 'KRBA', 'PND', 'RIG', 'SDL', 'SJQ', 'USL'];
-    const submittedLobbies = new Set();
-    filteredSubmissionData.forEach(row => {
-        if (row[2]) submittedLobbies.add(row[2].trim().toUpperCase());
-    });
-
-    const missingLobbies = ALL_DIVISION_LOBBIES.filter(lobby => !submittedLobbies.has(lobby));
     const defaulterContainer = document.getElementById('defaulterLobbiesContainer');
     const defaulterCountBadge = document.getElementById('txtDefaulterCount');
+    
+    // Ek unique tracker banayein date + lobby check karne ke liye
+    const submissionTracker = new Set();
+    filteredSubmissionData.forEach(row => {
+        if (row[1] && row[2]) {
+            submissionTracker.add(`${row[1].trim()}_${row[2].trim().toUpperCase()}`);
+        }
+    });
 
-    if (missingLobbies.length === 0) {
+    // Date range extract karein active filters se
+    const startStr = document.getElementById('filterStartDate').value;
+    const endStr = document.getElementById('filterEndDate').value;
+    
+    let missingEntries = [];
+    
+if (startStr && endStr) {
+        let currentLoopDate = new Date(startStr);
+        let maxLoopDate = new Date(endStr);
+        
+        // Aaj ki real-time date nikalne ke liye
+        const todayStr = new Date().toISOString().split('T')[0];
+        
+        // Agar select ki gayi end date 'Aaj' ki hai, toh loop ko 'Kal' (Yesterday) tak hi chalayein
+        if (endStr === todayStr) {
+            maxLoopDate.setDate(maxLoopDate.getDate() - 1);
+        }
+        
+        // Loop chalayein range ki har ek date par (aaj ki date automatically skip ho jayegi)
+        while (currentLoopDate <= maxLoopDate) {
+            const dateString = currentLoopDate.toISOString().split('T')[0];
+            
+            ALL_DIVISION_LOBBIES.forEach(lobby => {
+                if (!submissionTracker.has(`${dateString}_${lobby}`)) {
+                    missingEntries.push({ date: dateString, lobby: lobby });
+                }
+            });
+            
+            currentLoopDate.setDate(currentLoopDate.getDate() + 1);
+        }
+    }
+
+    // UI Rendering update logic
+    if (missingEntries.length === 0) {
         defaulterCountBadge.innerText = "All Lobbies Submitted";
         defaulterCountBadge.className = "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20";
         defaulterContainer.innerHTML = `<span class="text-xs text-emerald-600 dark:text-emerald-400 italic flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Division 100% Complete! All lobbies have submitted reports for this period.</span>`;
     } else {
-        defaulterCountBadge.innerText = `${missingLobbies.length} Lobbies Pending`;
+        defaulterCountBadge.innerText = `${missingEntries.length} Forms Pending`;
         defaulterCountBadge.className = "bg-red-500/10 text-red-500 dark:text-red-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-red-500/20 animate-pulse";
         
-        defaulterContainer.innerHTML = missingLobbies.map(lobby => {
-            return `<span class="px-3 py-1.5 bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 rounded-xl text-xs font-bold font-mono tracking-wider shadow-md flex items-center gap-1.5"><i class="fa-solid fa-circle-dot text-[7px] text-red-500 animate-ping"></i> ${lobby}</span>`;
+        // Date aur Lobby ko chip style me show karega jisse clear pta chal sake
+        defaulterContainer.innerHTML = missingEntries.map(entry => {
+            // Date ko short format me display karne ke liye layout: DD/MM
+            const dateParts = entry.date.split('-');
+            const displayDate = `${dateParts[2]}/${dateParts[1]}`;
+            return `<span class="px-3 py-1.5 bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 rounded-xl text-xs font-bold font-mono tracking-wider shadow-md flex items-center gap-1.5" title="Missing on ${entry.date}"><i class="fa-solid fa-circle-dot text-[7px] text-red-500 animate-ping"></i> ${entry.lobby} (${displayDate})</span>`;
         }).join('');
     }
 }
