@@ -55,10 +55,9 @@
 <body class="h-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 flex flex-col antialiased transition-colors duration-200">
 
     <!-- NAVIGATION HEADER -->
-    <header class="bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
+   <header class="bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
         <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
             
-            <!-- Brand & Status -->
             <div class="flex items-center gap-3">
                 <div class="p-2.5 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl text-white shadow-lg shadow-blue-500/10">
                     <i class="fa-solid fa-train-subway text-xl"></i>
@@ -71,9 +70,13 @@
                 </div>
             </div>
 
-           <!-- Configuration & Connection Panel Quick Controls -->
-            <div class="flex items-center flex-wrap gap-3">
-                <!-- Theme Toggle Button (Day / Night Mode) -->
+           <div class="flex items-center flex-wrap gap-3">
+                
+                <a href="cccrewdashboard.html" class="px-4 py-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-blue-500/10" title="Open Crew Position Entry Module">
+                    <i class="fa-solid fa-users-gear text-sm"></i>
+                    <span>Crew Position Dashboard (Every 4 Hours)</span>
+                </a>
+
                 <button onclick="toggleThemeMode()" class="p-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-amber-400 rounded-xl transition-all flex items-center justify-center shadow" title="Toggle Day/Night Mode">
                     <i id="themeIcon" class="fa-solid fa-sun text-sm"></i>
                 </button>
