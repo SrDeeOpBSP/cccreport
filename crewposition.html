@@ -217,12 +217,94 @@
             align-items: center;
             justify-content: center;
         }
+
+        /* Custom Modern Modal Center Design */
+        .custom-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .custom-modal {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 480px;
+            width: 90%;
+            text-align: center;
+            animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border-top: 5px solid #ef4444;
+        }
+
+        @keyframes modalFadeIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-icon {
+            font-size: 3rem;
+            color: #ef4444;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 12px;
+        }
+
+        .modal-body {
+            font-size: 1rem;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            text-align: left;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .modal-body strong {
+            color: #0f172a;
+        }
+
+        .modal-btn {
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .modal-btn:hover {
+            background-color: #3b82f6;
+        }
     </style>
 </head>
 <body>
 
-<!-- Toast Layout Container Element -->
 <div id="toastContainer" class="toast-container"></div>
+
+<div id="customModalOverlay" class="custom-modal-overlay">
+    <div class="custom-modal">
+        <div class="modal-icon">&#9888;</div>
+        <div class="modal-title">Data Validation Check</div>
+        <div id="modalMessage" class="modal-body"></div>
+        <button type="button" class="modal-btn" onclick="closeCustomModal()">Review & Correct</button>
+    </div>
+</div>
 
 <div class="form-container">
     <div id="loadingOverlay" class="loader">Processing request... Please wait...</div>
@@ -280,7 +362,6 @@
             </div>
         </div>
 
-        <!-- ================= AKT LOBBY FIELDS ================= -->
         <div id="section_AKT" class="lobby-section">
             <div class="section-title">AKT Lobby Parameters</div>
             <div class="grid-container">
@@ -326,7 +407,6 @@
             </div>
         </div>
 
-        <!-- ================= BJRI LOBBY FIELDS ================= -->
         <div id="section_BJRI" class="lobby-section">
             <div class="section-title">BJRI Lobby Parameters</div>
             <div class="grid-container">
@@ -372,7 +452,6 @@
             </div>
         </div>
 
-        <!-- ================= BRJN LOBBY FIELDS ================= -->
         <div id="section_BRJN" class="lobby-section">
             <div class="section-title">BRJN Lobby Parameters</div>
             <div class="grid-container">
@@ -421,7 +500,6 @@
             </div>
         </div>
 
-        <!-- ================= BSP LOBBY FIELDS ================= -->
         <div id="section_BSP" class="lobby-section">
             <div class="section-title">BSP Lobby Parameters</div>
             <div class="grid-container">
@@ -481,7 +559,6 @@
             </div>
         </div>
 
-        <!-- ================= KHS LOBBY FIELDS ================= -->
         <div id="section_KHS" class="lobby-section">
             <div class="section-title">KHS Lobby Parameters</div>
             <div class="grid-container">
@@ -528,7 +605,6 @@
             </div>
         </div>
 
-        <!-- ================= KRBA LOBBY FIELDS ================= -->
         <div id="section_KRBA" class="lobby-section">
             <div class="section-title">KRBA Lobby Parameters</div>
             <div class="grid-container">
@@ -574,7 +650,6 @@
             </div>
         </div>
 
-        <!-- ================= PND LOBBY FIELDS ================= -->
         <div id="section_PND" class="lobby-section">
             <div class="section-title">PND Lobby Parameters</div>
             <div class="grid-container">
@@ -623,7 +698,6 @@
             </div>
         </div>
 
-        <!-- ================= RIG LOBBY FIELDS ================= -->
         <div id="section_RIG" class="lobby-section">
             <div class="section-title">RIG Lobby Parameters</div>
             <div class="grid-container">
@@ -673,7 +747,6 @@
             </div>
         </div>
 
-        <!-- ================= SDL LOBBY FIELDS ================= -->
         <div id="section_SDL" class="lobby-section">
             <div class="section-title">SDL Lobby Parameters</div>
             <div class="grid-container">
@@ -725,7 +798,6 @@
             </div>
         </div>
 
-        <!-- ================= SJQ LOBBY FIELDS ================= -->
         <div id="section_SJQ" class="lobby-section">
             <div class="section-title">SJQ Lobby Parameters</div>
             <div class="grid-container">
@@ -767,7 +839,6 @@
             </div>
         </div>
 
-        <!-- ================= USL LOBBY FIELDS ================= -->
         <div id="section_USL" class="lobby-section">
             <div class="section-title">USL Lobby Parameters</div>
             <div class="grid-container">
@@ -819,7 +890,6 @@
             </div>
         </div>
 
-        <!-- ================= OFF LEAVE SECTION ================= -->
         <div id="offLeaveSection" class="off-leave-section">
             <div class="section-title">OFF Leave Parameters (Only for 00:00hrs)</div>
             <div class="grid-container">
@@ -852,7 +922,6 @@
         
         document.querySelectorAll('.lobby-section').forEach(section => {
             section.classList.remove('show-block');
-            // जो लॉबी छिपी हुई है उसके इनपुट्स से required हटा दें ताकि वो वैलिडेशन न रोकें
             section.querySelectorAll("input, select").forEach(input => input.removeAttribute('required'));
         });
 
@@ -860,7 +929,6 @@
             const targetSection = document.getElementById('section_' + selectedLobby);
             if (targetSection) {
                 targetSection.classList.add('show-block');
-                // चुनी गई लॉबी के सभी इनपुट्स को required बना दें
                 targetSection.querySelectorAll("input, select").forEach(input => input.setAttribute('required', 'true'));
             }
         }
@@ -874,16 +942,14 @@
 
         if (selectedTime === '00:00hrs' && activeLobbies.includes(selectedLobby)) {
             offLeaveSec.classList.add('show-block');
-            // OFF Leave फ़ील्ड्स को required बनाएं
             offLeaveSec.querySelectorAll("input").forEach(input => input.setAttribute('required', 'true'));
         } else {
             offLeaveSec.classList.remove('show-block');
-            // छिपे होने पर required हटाएं
             offLeaveSec.querySelectorAll("input").forEach(input => input.removeAttribute('required'));
         }
     }
 
-    // Helper function to render modern professional notifications
+    // Helper function to render modern professional top-right notifications
     function showToast(message, type = "success") {
         const container = document.getElementById("toastContainer");
         const toast = document.createElement("div");
@@ -902,7 +968,17 @@
         }, 4000);
     }
 
-    // Google Sheets Integration Logic
+    // Helper functions for Custom Centered Validation Modal
+    function showCustomModal(htmlContent) {
+        document.getElementById('modalMessage').innerHTML = htmlContent;
+        document.getElementById('customModalOverlay').style.display = 'flex';
+    }
+
+    function closeCustomModal() {
+        document.getElementById('customModalOverlay').style.display = 'none';
+    }
+
+    // Google Sheets Integration Logic with Custom Rules Engine
     function handleFormSubmit(event) {
         event.preventDefault();
         
@@ -911,18 +987,83 @@
         const loader = document.getElementById('loadingOverlay');
         const selectedLobby = document.getElementById('lobbySelect').value;
         
+        const lobbySection = document.getElementById("section_" + selectedLobby);
+        
+        if (lobbySection) {
+            const getNumVal = (name) => {
+                const el = lobbySection.querySelector(`[name="${name}"]`);
+                return el ? (parseInt(el.value, 10) || 0) : 0;
+            };
+
+            // Rule 1: UP TO + DN TO must equal HQ Crew TO + O/S Crew TO
+            const totalUpTo = getNumVal("Total Number of UP TO");
+            const totalDnTo = getNumVal("Total Number of DN TO");
+            const hqCrewTo = getNumVal("HQ Crew TO");
+            const osCrewTo = getNumVal("O/S Crew TO");
+            const sumUpDown = totalUpTo + totalDnTo;
+            const sumHqOs = hqCrewTo + osCrewTo;
+
+            if (sumUpDown !== sumHqOs) {
+                showCustomModal(
+                    `<strong>Mismatch in Total Traffic Crew:</strong><br><br>` +
+                    `• Sum of <b>UP TO + DN TO</b> = <strong>${sumUpDown}</strong> (${totalUpTo} + ${totalDnTo})<br>` +
+                    `• Sum of <b>HQ + O/S Crew TO</b> = <strong>${sumHqOs}</strong> (${hqCrewTo} + ${osCrewTo})<br><br>` +
+                    `Both calculations must match exactly.`
+                );
+                return;
+            }
+
+            // Rule 2: O/S Crew TO must equal the sum of its Bifurcation fields
+            const osToBifurcationInputs = lobbySection.querySelectorAll('.sub-fields-box')[0]?.querySelectorAll('input');
+            let totalOsToBifurcation = 0;
+            if (osToBifurcationInputs) {
+                osToBifurcationInputs.forEach(input => {
+                    totalOsToBifurcation += (parseInt(input.value, 10) || 0);
+                });
+            }
+
+            if (osCrewTo !== totalOsToBifurcation) {
+                showCustomModal(
+                    `<strong>Breakdown Mismatch (O/S Crew TO):</strong><br><br>` +
+                    `• Entered Value: <strong>${osCrewTo}</strong><br>` +
+                    `• Sum of Lobby Breakdown: <strong>${totalOsToBifurcation}</strong><br><br>` +
+                    `Please check the 'O/S Crew TO Bifurcation' section.`
+                );
+                return;
+            }
+
+            // Rule 3: Total Number of O/S Crew Set Available must equal its Bifurcation fields
+            const totalOsSets = getNumVal("Total Number of O/S Crew Set Available");
+            const osSetBifurcationInputs = lobbySection.querySelectorAll('.sub-fields-box')[1]?.querySelectorAll('input');
+            let totalOsSetBifurcation = 0;
+            if (osSetBifurcationInputs) {
+                osSetBifurcationInputs.forEach(input => {
+                    totalOsSetBifurcation += (parseInt(input.value, 10) || 0);
+                });
+            }
+
+            if (totalOsSets !== totalOsSetBifurcation) {
+                showCustomModal(
+                    `<strong>Breakdown Mismatch (O/S Crew Set Available):</strong><br><br>` +
+                    `• Entered Value: <strong>${totalOsSets}</strong><br>` +
+                    `• Sum of Lobby Breakdown: <strong>${totalOsSetBifurcation}</strong><br><br>` +
+                    `Please check the 'O/S Crew Set Available Bifurcation' section.`
+                );
+                return;
+            }
+        }
+
+        // Proceed to Submit if all mathematical constraints clear
         loader.style.display = 'flex';
         submitBtn.disabled = true;
 
         const formData = new FormData();
-        
         formData.append("Date", form.elements["Date"].value);
         formData.append("Crew Position Time", form.elements["Crew Position Time"].value);
         formData.append("Lobby", form.elements["Lobby"].value);
         formData.append("CC Name", form.elements["CC Name"].value);
         formData.append("DI Name", form.elements["DI Name"].value);
 
-        const lobbySection = document.getElementById("section_" + selectedLobby);
         if (lobbySection) {
             const inputs = lobbySection.querySelectorAll("input, select");
             inputs.forEach(input => {
