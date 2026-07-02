@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Crew Management Dashboard — Analytics Enterprise</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        /* High Contrast Black Borders & Responsive Typography */
+        th, td {
+            border: 1.5px solid #000000 !important;
+            padding: 10px 8px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            min-width: 55px;
+            color: #000000;
+            transition: all 0.15s ease;
+        }
+        /* Dark Mode Table Overrides */
+        .dark th, .dark td {
+            border: 1.5px solid #ffffff !important;
+            color: #ffffff !important;
+        }
+        th {
+            background-color: #f1f5f9 !important;
+            color: #000000 !important;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.02em;
+        }
+        .dark th {
+            background-color: #1e293b !important;
+        }
+        tr:hover td:not(.blocked-cell) {
+            background-color: #e2e8f0;
+        }
+        .dark tr:hover td:not(.blocked-cell) {
+            background-color: #334155;
+        }
+        .blocked-cell {
+            background: repeating-linear-gradient(45deg, #a1a1aa, #a1a1aa 5px, #d4d4d8 5px, #d4d4d8 10px) !important;
+            color: transparent !important;
+        }
+        .dark .blocked-cell {
+            background: repeating-linear-gradient(45deg, #4b5563, #4b5563 5px, #1f2937 5px, #1f2937 10px) !important;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+    </style>
+
+<style id="premium-dark-patch">
+.dark body, .dark{
+ --bg1:#020617;
+ --bg2:#0f172a;
+ --card:#111c2e;
+}
+.dark body{
+ background:radial-gradient(circle at top,#1e3a8a 0%,#0f172a 30%,#020617 100%) fixed!important;
+ color:#e5eefc!important;
+}
+.dark .bg-white,.dark [class*="bg-white"]{
+ background:rgba(15,23,42,.72)!important;
+ backdrop-filter:blur(14px);
+ border-color:#334155!important;
+ box-shadow:0 8px 24px rgba(0,0,0,.45);
+}
+.dark header{
+ background:rgba(2,6,23,.86)!important;
+ backdrop-filter:blur(16px);
+}
+.dark tr:hover td:not(.blocked-cell){
+ background:#1e3a5f!important;
+}
+.dark th{
+ background:linear-gradient(180deg,#243b63,#172554)!important;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb{
+ background:#3b82f6;
+}
+</style>
+
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased min-h-screen pb-12">
+
+    <header class="bg-white dark:bg-slate-900 border-b-2 border-black dark:border-white sticky top-0 z-50 shadow-sm backdrop-blur-md">
+        <div class="max-w-[98%] mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-600 rounded-lg text-white shadow-md">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h2a2 2 0 01-2-2z"></path></svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight">Master Crew Management</h1>
+                    <p class="text-xs text-slate-600 dark:text-slate-400 font-bold">Real-time Synchronization Control Room</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3 bg-slate-200 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-400 dark:border-slate-600 w-full sm:w-auto">
+                <div class="flex items-center gap-1.5 px-2">
+                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Slot:</span>
+                    <select id="positionTime" class="text-xs font-black bg-white dark:bg-slate-900 border border-black dark:border-white rounded-lg p-1.5 focus:outline-none" onchange="fetchMasterDashboardData()">
+                        <option value="00:00">00:00</option>
+                        <option value="04:00">04:00</option>
+                        <option value="08:00">08:00</option>
+                        <option value="12:00">12:00</option>
+                        <option value="16:00">16:00</option>
+                        <option value="20:00">20:00</option>
+                    </select>
+                </div>
+                <div class="h-4 w-px bg-slate-400 dark:bg-slate-600 hidden sm:block"></div>
+                <div class="flex items-center gap-1.5 px-2">
+                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">From:</span>
+                    <input type="date" id="fromDate" class="text-xs font-bold bg-white dark:bg-slate-900 border border-black dark:border-white rounded-lg p-1" onchange="fetchMasterDashboardData()">
+                </div>
+                <div class="flex items-center gap-1.5 px-2">
+                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">To:</span>
+                    <input type="date" id="toDate" class="text-xs font-bold bg-white dark:bg-slate-900 border border-black dark:border-white rounded-lg p-1" onchange="fetchMasterDashboardData()">
+                </div>
+                <button onclick="fetchMasterDashboardData()" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold text-xs py-1.5 px-4 rounded-lg shadow-md border border-black dark:border-white cursor-pointer">
+                    Sync Engine
+                </button>
+                <div class="h-4 w-px bg-slate-400 dark:bg-slate-600"></div>
+                <button onclick="window.location.href='ccdashboard.html'" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs py-1.5 px-4 rounded-lg shadow-md border border-white cursor-pointer">Crew Controller Morning Report</button>
+<button onclick="toggleTheme()" class="p-1.5 rounded-lg bg-white dark:bg-slate-900 border border-black dark:border-white cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                    <svg id="themeIcon" class="w-4 h-4 text-slate-900 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-[98%] mx-auto px-4 mt-6 space-y-6">
+        
+        <div id="highlightPanel" class="rounded-xl border hidden shadow-sm transition-all duration-300"></div>
+        <div id="loadingText" class="text-center p-4 bg-blue-100 dark:bg-blue-950 text-blue-900 dark:text-blue-200 rounded-xl font-bold text-sm border-2 border-blue-400 hidden animate-pulse">
+            ⚡ Fetching synchronized runtime datasets from Google Sheets Engine...
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">Total Train Orders</span>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <span id="kpi_total_to" class="text-3xl font-black">-</span>
+                    <span class="text-xs font-bold text-emerald-800 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-300">Active</span>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">Any Time LP Available</span>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <span id="kpi_lp_anytime" class="text-3xl font-black text-blue-600 dark:text-blue-400">-</span>
+                    <span class="text-xs text-slate-500 font-bold">Ready</span>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">Any Time ALP Available</span>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <span id="kpi_alp_anytime" class="text-3xl font-black text-indigo-600 dark:text-indigo-400">-</span>
+                    <span class="text-xs text-slate-500 font-bold">Ready</span>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">Total Outstation Crew Sets</span>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <span id="kpi_os_sets" class="text-3xl font-black text-slate-800 dark:text-slate-200">-</span>
+                    <span class="text-xs font-bold text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-950 px-1.5 py-0.5 rounded border border-amber-300">Rest</span>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col justify-between col-span-2 lg:col-span-1">
+                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">Total TKE Logs</span>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <span id="kpi_total_tke" class="text-3xl font-black text-rose-600 dark:text-rose-400">-</span>
+                    <span class="text-xs text-slate-500 font-bold">En Route</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm lg:col-span-2">
+                <h3 class="text-xs font-black text-slate-500 tracking-wider uppercase mb-4">Lobby-wise Freight Traffic Volume Breakdown</h3>
+                <div class="h-[260px] w-full relative">
+                    <canvas id="trafficVolumeChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm">
+                <h3 class="text-xs font-black text-slate-500 tracking-wider uppercase mb-4">Crew Availability Profile Structure</h3>
+                <div class="h-[260px] w-full relative flex justify-center">
+                    <canvas id="crewDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-white shadow-md overflow-hidden">
+            <div class="bg-slate-900 dark:bg-slate-800 px-4 py-3 border-b-2 border-black dark:border-white flex justify-between items-center">
+                <h2 class="text-base font-black text-white tracking-wide uppercase">Train Order Operational Particulars</h2>
+                <span class="text-xs bg-blue-500 text-white font-bold px-2 py-0.5 rounded font-mono">Table Ref: T3</span>
+            </div>
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="w-24 sticky left-0 bg-slate-200 dark:bg-slate-700 shadow-md z-10">Lobby</th>
+                            <th>Total UP TO</th>
+                            <th>Total DN TO</th>
+                            <th class="bg-blue-100 dark:bg-blue-950 font-black">TOTAL TO</th>
+                            <th>HQ Crew TO</th>
+                            <th>O/S Crew TO</th>
+                            <th>Shuttling TO</th>
+                            <th>Pilot TO</th>
+                            <th>Banking Engine TO</th>
+                            <th class="bg-rose-100 dark:bg-rose-950">Total TKE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table3Body" class="divide-y divide-black dark:divide-white"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-white shadow-md overflow-hidden lg:col-span-8">
+                <div class="bg-slate-900 dark:bg-slate-800 px-4 py-3 border-b-2 border-black dark:border-white flex justify-between items-center">
+                    <h2 class="text-base font-black text-white tracking-wide uppercase">Headquarters Crew Availability Structure</h2>
+                    <span class="text-xs bg-indigo-500 text-white font-bold px-2 py-0.5 rounded font-mono">Table Ref: T4</span>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="w-24 sticky left-0 bg-slate-200 dark:bg-slate-700 shadow-md z-10">Lobby</th>
+                                <th>LP On Board (PR)</th>
+                                <th>LP PR Given</th>
+                                <th class="bg-amber-100 dark:bg-amber-950 font-extrabold">LP On Board (No PR)</th>
+                                <th class="bg-emerald-100 dark:bg-emerald-950 font-black">LP Anytime Avail</th>
+                                <th>ALP On Board (PR)</th>
+                                <th>ALP PR Given</th>
+                                <th class="bg-amber-100 dark:bg-amber-950 font-extrabold">ALP On Board (No PR)</th>
+                                <th class="bg-emerald-100 dark:bg-emerald-950 font-black">ALP Anytime Avail</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table4Body" class="divide-y divide-black dark:divide-white"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-white shadow-md overflow-hidden lg:col-span-4">
+                <div class="bg-slate-900 dark:bg-slate-800 px-4 py-3 border-b-2 border-black dark:border-white flex justify-between items-center">
+                    <h2 class="text-base font-black text-white tracking-wide uppercase">Off Leave Pipeline</h2>
+                    <span class="text-xs bg-amber-600 text-white font-bold px-2 py-0.5 rounded font-mono">Table Ref: T5</span>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="w-20 sticky left-0 bg-slate-200 dark:bg-slate-700 shadow-md z-10">Lobby</th>
+                                <th>LP 02:00 Hr</th>
+                                <th>LP 06:00 Hr</th>
+                                <th>ALP 02:00 Hr</th>
+                                <th>ALP 06:00 Hr</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table5Body" class="divide-y divide-black dark:divide-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-white shadow-md overflow-hidden">
+                <div class="bg-slate-800 px-4 py-2.5 border-b-2 border-black dark:border-white flex justify-between items-center">
+                    <h2 class="text-sm font-black text-white tracking-wide uppercase">Outstation Crew Train Orders Matrix</h2>
+                    <span class="text-xs bg-slate-600 text-white font-bold px-2 py-0.5 rounded font-mono">Table Ref: T1</span>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full border-collapse">
+                        <thead id="table1Head"></thead>
+                        <tbody id="table1Body" class="divide-y divide-black dark:divide-white"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-white shadow-md overflow-hidden">
+                <div class="bg-slate-800 px-4 py-2.5 border-b-2 border-black dark:border-white flex justify-between items-center">
+                    <h2 class="text-sm font-black text-white tracking-wide uppercase">Outstation Crew Set Availability Matrix</h2>
+                    <span class="text-xs bg-slate-600 text-white font-bold px-2 py-0.5 rounded font-mono">Table Ref: T2</span>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full border-collapse">
+                        <thead id="table2Head"></thead>
+                        <tbody id="table2Body" class="divide-y divide-black dark:divide-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const API_KEY = 'AIzaSyAw23pJz0K9fZb2rRRAe2C2cJDilRc0Kac'; 
+        const SHEET_ID = '1syRRh3HVW3p-mUbRWazrhr6NzhPnk6YePM0Uv89CRAc'; 
+
+        const LOBBIES = ['AKT', 'BJRI', 'BRJN', 'BSP', 'KHS', 'KRBA', 'PND', 'RIG', 'SDL', 'SJQ', 'USL'];
+        const SUB_STATIONS = ['BSP', 'KRBA', 'KHS', 'RIG', 'SDL', 'SJQ', 'ROU JSG', 'SBP', 'DBEC', 'DGG', 'BYT', 'PND', 'AKT', 'USL', 'BJRI', 'BRJN', 'JSG', 'SJQ', 'SGO', 'R'];
+        
+        const colsT1 = ['os_crew_to', ...SUB_STATIONS.map((_, i) => `sub_${i+1}`)];
+        const colsT2 = ['os_crew_set', ...SUB_STATIONS.map((_, i) => `sub_${i+1}`)];
+        const colsT3 = ['up_to', 'dn_to', 'total_to', 'hq_crew_to', 'os_crew_to_t3', 'shuttling_to', 'pilot_to', 'banking_to', 'tke'];
+        const colsT4 = ['lp_board_pr', 'lp_pr_given', 'lp_board_no_pr', 'lp_anytime_avail', 'alp_board_pr', 'alp_pr_given', 'alp_board_no_pr', 'alp_anytime_avail'];
+        const colsT5 = ['off_lp_02', 'off_lp_06', 'off_alp_02', 'off_alp_06'];
+
+        const blockMapT1 = {
+            'AKT':  [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            'BJRI': [0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            'BRJN': [0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            'BSP':  [0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
+            'KHS':  [0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+            'KRBA': [0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            'PND':  [0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1],
+            'RIG':  [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1],
+            'SDL':  [0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1],
+            'SJQ':  [0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+            'USL':  [0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0]
+        };
+        const blockMapT2 = { ...blockMapT1 };
+        const blockMapT3 = {}; LOBBIES.forEach(l => blockMapT3[l] = Array(colsT3.length).fill(0));
+        const blockMapT4 = {}; LOBBIES.forEach(l => blockMapT4[l] = Array(colsT4.length).fill(0));
+        const blockMapT5 = {}; LOBBIES.forEach(l => blockMapT5[l] = Array(colsT5.length).fill(0));
+
+        let trafficChartInstance = null;
+        let crewChartInstance = null;
+
+        // Theme Toggle State Engine
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            const icon = document.getElementById('themeIcon');
+            if (isDark) {
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.343l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path>`;
+                updateChartThemes(true);
+            } else {
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>`;
+                updateChartThemes(false);
+            }
+        }
+
+        function updateChartThemes(isDark) {
+            const color = isDark ? '#ffffff' : '#000000';
+            [trafficChartInstance, crewChartInstance].forEach(chart => {
+                if(chart) {
+                    chart.options.plugins.legend.labels.color = color;
+                    if(chart.options.scales && chart.options.scales.y) {
+                        chart.options.scales.y.ticks.color = color;
+                        chart.options.scales.x.ticks.color = color;
+                    }
+                    chart.update();
+                }
+            });
+        }
+
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('fromDate').value = today;
+            document.getElementById('toDate').value = today;
+
+            const currentHour = new Date().getHours();
+            let slot = "20:00";
+            if (currentHour >= 0 && currentHour < 4) slot = "00:00";
+            else if (currentHour >= 4 && currentHour < 8) slot = "04:00";
+            else if (currentHour >= 8 && currentHour < 12) slot = "08:00";
+            else if (currentHour >= 12 && currentHour < 16) slot = "12:00";
+            else if (currentHour >= 16 && currentHour < 20) slot = "16:00";
+            document.getElementById('positionTime').value = slot;
+
+            renderHeaderTemplates();
+            renderBlankLayout();
+            initChartsPlaceholder();
+            fetchMasterDashboardData(); 
+        };
+
+        function renderHeaderTemplates() {
+            let subHeadersHtml = `<tr><th class="sticky left-0 bg-slate-300 dark:bg-slate-700 z-10 w-24">LOBBY</th><th>TOTAL O/S BASE</th>`;
+            SUB_STATIONS.forEach(station => {
+                subHeadersHtml += `<th>OS TO <br><span class="text-blue-800 dark:text-blue-400">${station}</span></th>`;
+            });
+            subHeadersHtml += `</tr>`;
+            document.getElementById('table1Head').innerHTML = subHeadersHtml;
+
+            let t2HeadersHtml = `<tr><th class="sticky left-0 bg-slate-300 dark:bg-slate-700 z-10 w-24">LOBBY</th><th>TOTAL SETS AVAIL</th>`;
+            SUB_STATIONS.forEach(station => {
+                t2HeadersHtml += `<th>OS SET <br><span class="text-indigo-800 dark:text-indigo-400">${station}</span></th>`;
+            });
+            t2HeadersHtml += `</tr>`;
+            document.getElementById('table2Head').innerHTML = t2HeadersHtml;
+        }
+
+        function renderBlankLayout() {
+            ['table1Body', 'table2Body', 'table3Body', 'table4Body', 'table5Body'].forEach(id => document.getElementById(id).innerHTML = '');
+
+            LOBBIES.forEach(lobby => {
+                document.getElementById('table1Body').innerHTML += generateRowHtml(lobby, blockMapT1[lobby], colsT1, 'T1');
+                document.getElementById('table2Body').innerHTML += generateRowHtml(lobby, blockMapT2[lobby], colsT2, 'T2');
+                document.getElementById('table3Body').innerHTML += generateRowHtml(lobby, blockMapT3[lobby], colsT3, 'T3');
+                document.getElementById('table4Body').innerHTML += generateRowHtml(lobby, blockMapT4[lobby], colsT4, 'T4');
+                document.getElementById('table5Body').innerHTML += generateRowHtml(lobby, blockMapT5[lobby], colsT5, 'T5');
+            });
+
+            document.getElementById('table1Body').innerHTML += generateTotalRowHtml(colsT1, 'T1');
+            document.getElementById('table2Body').innerHTML += generateTotalRowHtml(colsT2, 'T2');
+            document.getElementById('table3Body').innerHTML += generateTotalRowHtml(colsT3, 'T3');
+            document.getElementById('table4Body').innerHTML += generateTotalRowHtml(colsT4, 'T4');
+            document.getElementById('table5Body').innerHTML += generateTotalRowHtml(colsT5, 'T5');
+        }
+
+        function generateRowHtml(lobby, blockArray, cols, tableRef) {
+            let row = `<tr><td class="font-extrabold bg-slate-200 dark:bg-slate-800 text-left pl-3 border-r-2 border-black dark:border-white sticky left-0 z-10">${lobby}</td>`;
+            blockArray.forEach((isBlocked, index) => {
+                if (isBlocked === 1) {
+                    row += `<td class="blocked-cell"></td>`;
+                } else {
+                    row += `<td id="${tableRef}_${lobby}_${cols[index]}" class="font-bold">-</td>`;
+                }
+            });
+            row += `</tr>`;
+            return row;
+        }
+
+        function generateTotalRowHtml(cols, tableRef) {
+            let row = `<tr class="bg-slate-300 dark:bg-slate-700 border-t-2 border-black dark:border-white"><td class="font-black bg-slate-400 dark:bg-slate-600 text-left pl-3 sticky left-0 z-10">TOTAL</td>`;
+            cols.forEach((col) => {
+                row += `<td id="${tableRef}_TOTAL_${col}" class="font-black bg-slate-300 dark:bg-slate-700">-</td>`;
+            });
+            row += `</tr>`;
+            return row;
+        }
+
+        function initChartsPlaceholder() {
+            const ctx1 = document.getElementById('trafficVolumeChart').getContext('2d');
+            trafficChartInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: { labels: LOBBIES, datasets: [
+                    { label: 'UP Train Orders', data: Array(LOBBIES.length).fill(0), backgroundColor: '#1d4ed8' },
+                    { label: 'DN Train Orders', data: Array(LOBBIES.length).fill(0), backgroundColor: '#3b82f6' }
+                ]},
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { labels: { color: '#000000' } } } }
+            });
+
+            const ctx2 = document.getElementById('crewDistributionChart').getContext('2d');
+            crewChartInstance = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['LP (PR)', 'LP (No PR)', 'ALP (PR)', 'ALP (No PR)'],
+                    datasets: [{ data: [0, 0, 0, 0], backgroundColor: ['#1e40af', '#60a5fa', '#4338ca', '#818cf8'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#000000' } } } }
+            });
+        }
+
+        async function fetchMasterDashboardData() {
+            const targetTime = document.getElementById('positionTime').value; 
+            const targetDate = document.getElementById('fromDate').value;     
+            
+            document.getElementById('loadingText').classList.remove('hidden');
+            renderBlankLayout(); 
+
+            let missingLobbies = []; 
+
+            for (const lobby of LOBBIES) {
+                try {
+                    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${lobby}!A1:BA100?key=${API_KEY}`;
+                    const response = await fetch(url);
+                    const result = await response.json();
+
+                    if (response.status !== 200 || !result.values || result.values.length <= 1) {
+                        missingLobbies.push(lobby); continue;
+                    }
+
+                    const headers = result.values[0];
+                    let targetRow = null; 
+
+                    for (let i = result.values.length - 1; i > 0; i--) {
+                        const row = result.values[i];
+                        const rowDate = row[1] ? row[1].trim() : ""; 
+                        const rowTime = row[2] ? row[2].trim() : ""; 
+                        
+                        const isTimeMatch = rowTime.toLowerCase().replace(/\s+/g, '').includes(targetTime.replace(/\s+/g, '').toLowerCase());
+                        const isDateMatch = (rowDate === targetDate);
+
+                        if (isTimeMatch && isDateMatch) { targetRow = row; break; }
+                    }
+
+                    if (targetRow) parseAndFillLobby(lobby, headers, targetRow);
+                    else missingLobbies.push(lobby);
+                } catch (err) {
+                    missingLobbies.push(lobby);
+                }
+            }
+
+            updateHighlightPanel(missingLobbies);
+            executeDynamicFormulaRules();
+
+            calculateTotals('T1', colsT1, blockMapT1);
+            calculateTotals('T2', colsT2, blockMapT2);
+            calculateTotals('T3', colsT3, blockMapT3);
+            calculateTotals('T4', colsT4, blockMapT4);
+            calculateTotals('T5', colsT5, blockMapT5);
+            
+            computeExecutiveKPIs();
+            document.getElementById('loadingText').classList.add('hidden');
+        }
+
+        function updateHighlightPanel(missingArray) {
+            const panel = document.getElementById('highlightPanel');
+            panel.classList.remove('hidden');
+
+            if (missingArray.length > 0) {
+                panel.className = "p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-400 text-xs shadow-sm";
+                let badges = missingArray.map(lob => `<span class="inline-block bg-rose-700 text-white font-black px-2 py-0.5 rounded-md mx-1 animate-pulse border border-black">${lob}</span>`).join('');
+                panel.innerHTML = `<div class="flex items-center text-rose-900 dark:text-rose-200 font-bold">
+                    <span class="mr-2 text-sm">⚠️</span> 
+                    <span><strong>Sync Disruption:</strong> The following operational control sectors do not contain synced data logs:</span>
+                    <div class="ml-2 flex flex-wrap gap-1">${badges}</div>
+                </div>`;
+            } else {
+                panel.className = "p-4 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 border-2 border-emerald-500 text-xs shadow-sm";
+                panel.innerHTML = `<div class="flex items-center text-emerald-950 dark:text-emerald-200 font-black">
+                    <span class="mr-2 text-sm">✅</span>
+                    <span>All automated infrastructure feeds synchronized perfectly. Enterprise matrices verified.</span>
+                </div>`;
+            }
+        }
+
+        function parseAndFillLobby(lobby, headers, row) {
+            let totalToSum = 0;
+
+            headers.forEach((header, index) => {
+                if (!header) return;
+                const val = parseInt(row[index]) || 0;
+                let cleanHeader = header.toUpperCase().replace(/\s+/g, ' ').trim();
+
+                if (cleanHeader.includes("TOTAL NUMBER OF UP TO")) updateCell(`T3_${lobby}_up_to`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF DN TO")) updateCell(`T3_${lobby}_dn_to`, val);
+                if (cleanHeader.includes("HQ CREW TO")) updateCell(`T3_${lobby}_hq_crew_to`, val);
+                if (cleanHeader.includes("O/S CREW TO")) updateCell(`T3_${lobby}_os_crew_to_t3`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF SHUTTLING TO")) updateCell(`T3_${lobby}_shuttling_to`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF PILOT TO")) updateCell(`T3_${lobby}_pilot_to`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF BANKING ENGINE TO")) updateCell(`T3_${lobby}_banking_to`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF TKE")) updateCell(`T3_${lobby}_tke`, val);
+
+                if (cleanHeader.includes("TOTAL NUMBER OF UP TO") || cleanHeader.includes("TOTAL NUMBER OF DN TO")) {
+                    totalToSum += val; updateCell(`T3_${lobby}_total_to`, totalToSum);
+                }
+
+                if (cleanHeader.includes("O/S CREW TO")) updateCell(`T1_${lobby}_os_crew_to`, val);
+                SUB_STATIONS.forEach((station, sIdx) => {
+                    if (cleanHeader === `OS TO ${station}`) updateCell(`T1_${lobby}_sub_${sIdx+1}`, val);
+                });
+                
+                if (cleanHeader.includes("O/S CREW SET AVAILABLE")) updateCell(`T2_${lobby}_os_crew_set`, val);
+                SUB_STATIONS.forEach((station, sIdx) => {
+                    if (cleanHeader === `OS SET ${station}`) updateCell(`T2_${lobby}_sub_${sIdx+1}`, val);
+                });
+
+                if (cleanHeader.includes("TOTAL NUMBER OF LP AVAILABLE ON BOARD WITH PR")) updateCell(`T4_${lobby}_lp_board_pr`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF LP PR GIVEN")) updateCell(`T4_${lobby}_lp_pr_given`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF LP ANYTIME AVAILABLE")) updateCell(`T4_${lobby}_lp_anytime_avail`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF ALP AVAILABLE ON BOARD WITH PR")) updateCell(`T4_${lobby}_alp_board_pr`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF ALP PR GIVEN")) updateCell(`T4_${lobby}_alp_pr_given`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF ALP ANYTIME AVAILABLE")) updateCell(`T4_${lobby}_alp_anytime_avail`, val);
+
+                if (cleanHeader.includes("OFF LEAVE LP 02:00HRS")) updateCell(`T5_${lobby}_off_lp_02`, val);
+                if (cleanHeader.includes("OFF LEAVE LP 06:00HRS")) updateCell(`T5_${lobby}_off_lp_06`, val);
+                if (cleanHeader.includes("OFF LEAVE ALP 02:00HRS")) updateCell(`T5_${lobby}_off_alp_02`, val);
+                if (cleanHeader.includes("OFF LEAVE ALP 06:00HRS")) updateCell(`T5_${lobby}_off_alp_06`, val);
+            });
+        }
+
+        function executeDynamicFormulaRules() {
+            LOBBIES.forEach(lobby => {
+                const lpBoardPrCell = document.getElementById(`T4_${lobby}_lp_board_pr`);
+                const lpPrGivenCell = document.getElementById(`T4_${lobby}_lp_pr_given`);
+                if (lpBoardPrCell && lpBoardPrCell.innerText !== '-' && lpPrGivenCell && lpPrGivenCell.innerText !== '-') {
+                    updateCell(`T4_${lobby}_lp_board_no_pr`, (parseInt(lpBoardPrCell.innerText) || 0) - (parseInt(lpPrGivenCell.innerText) || 0));
+                }
+
+                const alpBoardPrCell = document.getElementById(`T4_${lobby}_alp_board_pr`);
+                const alpPrGivenCell = document.getElementById(`T4_${lobby}_alp_pr_given`);
+                if (alpBoardPrCell && alpBoardPrCell.innerText !== '-' && alpPrGivenCell && alpPrGivenCell.innerText !== '-') {
+                    updateCell(`T4_${lobby}_alp_board_no_pr`, (parseInt(alpBoardPrCell.innerText) || 0) - (parseInt(alpPrGivenCell.innerText) || 0));
+                }
+            });
+        }
+
+        function updateCell(id, value) {
+            let cell = document.getElementById(id); if (cell) cell.innerText = value;
+        }
+
+        function calculateTotals(tableRef, cols, blockMap) {
+            cols.forEach((col, colIdx) => {
+                let total = 0; let holdsData = false;
+                LOBBIES.forEach(lobby => {
+                    if (blockMap[lobby][colIdx] === 0) {
+                        const cell = document.getElementById(`${tableRef}_${lobby}_${col}`);
+                        if (cell && cell.innerText !== '-') {
+                            total += parseInt(cell.innerText) || 0; holdsData = true;
+                        }
+                    }
+                });
+                const totalCell = document.getElementById(`${tableRef}_TOTAL_${col}`);
+                if (totalCell) {
+                    totalCell.innerText = holdsData ? total : '0';
+                    if (!holdsData) { totalCell.classList.add('blocked-cell'); totalCell.innerText = ''; }
+                }
+            });
+        }
+
+        function computeExecutiveKPIs() {
+            const totalTo = parseInt(document.getElementById('T3_TOTAL_total_to').innerText) || 0;
+            const lpAnytime = parseInt(document.getElementById('T4_TOTAL_lp_anytime_avail').innerText) || 0;
+            const alpAnytime = parseInt(document.getElementById('T4_TOTAL_alp_anytime_avail').innerText) || 0;
+            const osSets = parseInt(document.getElementById('T2_TOTAL_os_crew_set').innerText) || 0;
+            const totalTke = parseInt(document.getElementById('T3_TOTAL_tke').innerText) || 0;
+
+            const lpPr = parseInt(document.getElementById('T4_TOTAL_lp_board_pr').innerText) || 0;
+            const lpNoPr = parseInt(document.getElementById('T4_TOTAL_lp_board_no_pr').innerText) || 0;
+            const alpPr = parseInt(document.getElementById('T4_TOTAL_alp_board_pr').innerText) || 0;
+            const alpNoPr = parseInt(document.getElementById('T4_TOTAL_alp_board_no_pr').innerText) || 0;
+
+            // Updated targets mapped to the new parameters
+            document.getElementById('kpi_total_to').innerText = totalTo;
+            document.getElementById('kpi_lp_anytime').innerText = lpAnytime;
+            document.getElementById('kpi_alp_anytime').innerText = alpAnytime;
+            document.getElementById('kpi_os_sets').innerText = osSets;
+            document.getElementById('kpi_total_tke').innerText = totalTke;
+
+            const upTrafficDataset = [];
+            const dnTrafficDataset = [];
+            LOBBIES.forEach(lobby => {
+                upTrafficDataset.push(parseInt(document.getElementById(`T3_${lobby}_up_to`)?.innerText) || 0);
+                dnTrafficDataset.push(parseInt(document.getElementById(`T3_${lobby}_dn_to`)?.innerText) || 0);
+            });
+
+            trafficChartInstance.data.datasets[0].data = upTrafficDataset;
+            trafficChartInstance.data.datasets[1].data = dnTrafficDataset;
+            trafficChartInstance.update();
+
+            crewChartInstance.data.datasets[0].data = [lpPr, lpNoPr, alpPr, alpNoPr];
+            crewChartInstance.update();
+        }
+    </script>
+</body>
+</html>
