@@ -358,6 +358,32 @@
             </div>
         </div>
 
+        <div class="grid grid-cols-1 gap-6">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-white shadow-md overflow-hidden">
+                <div class="bg-amber-400 dark:bg-amber-500 px-4 py-2.5 border-b-2 border-black dark:border-white text-center">
+                    <h2 class="text-base font-black text-black tracking-wide uppercase">Crack Run Particulars</h2>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table id="excel_T7" class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 dark:bg-slate-800">
+                                <th class="w-96 text-left pl-4 sticky left-0 bg-slate-200 dark:bg-slate-700 z-10 font-black">LOBBY/CRACK RUN & LR DETAILS</th>
+                                <th class="font-black">BJRI</th>
+                                <th class="font-black">BRJN</th>
+                                <th class="font-black">BSP</th>
+                                <th class="font-black">KRBA</th>
+                                <th class="font-black">RIG</th>
+                                <th class="font-black">SDL</th>
+                                <th class="font-black">USL</th>
+                                <th class="font-black bg-slate-300 dark:bg-slate-600">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table7Body" class="divide-y divide-black dark:divide-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <script>
@@ -367,6 +393,49 @@
         const LOBBIES = ['AKT', 'BJRI', 'BRJN', 'BSP', 'KHS', 'KRBA', 'PND', 'RIG', 'SDL', 'SJQ', 'USL'];
         const SUB_STATIONS = ['BSP', 'KRBA', 'KHS', 'RIG', 'SDL', 'SJQ', 'ROU JSG', 'SBP', 'DBEC', 'DGG', 'BYT', 'PND', 'AKT', 'USL', 'BJRI', 'BRJN', 'JSG', 'SJQ', 'SGO', 'R'];
         
+        const CRACK_LOBBIES = ['BJRI', 'BRJN', 'BSP', 'KRBA', 'RIG', 'SDL', 'USL'];
+        const CRACK_ROWS = [
+            { label: "Total Number of LP PND LR available on Board", key: "lp_pnd_lr" },
+            { label: "Total Number of ALP PND LR available on Board", key: "alp_pnd_lr" },
+            { label: "Total Number of LP BSP LR available on Board", key: "lp_bsp_lr" },
+            { label: "Total Number of ALP BSP LR available on Board", key: "alp_bsp_lr" },
+            { label: "Total Number of DGG Incoming Crew", key: "dgg_incoming" },
+            { label: "Total Number of DGG Outgoing Crew", key: "dgg_outgoing" },
+            { label: "Total Number of LP VYAS LR available on Board", key: "lp_vyas_lr" },
+            { label: "Total Number of ALP VYAS LR available on Board", key: "alp_vyas_lr" },
+            { label: "Total Number of DBEC Incoming Crew", key: "dbec_incoming" },
+            { label: "Total Number of DBEC Outgoing Crew", key: "dbec_outgoing" },
+            { label: "Total Number of SGO Incoming Crew", key: "sgo_incoming" },
+            { label: "Total Number of SGO Outgoing Crew", key: "sgo_outgoing" },
+            { label: "Total Number of LP S/BULLET LR available on Board", key: "lp_sbullet_lr" },
+            { label: "Total Number of ALP S/BULLET LR available on Board", key: "alp_sbullet_lr" },
+            { label: "Total Number of NKJ Incoming Crew", key: "nkj_incoming" },
+            { label: "Total Number of NKJ Outgoing Crew", key: "nkj_outgoing" },
+            { label: "Total Number of LP ARPA LR available on Board", key: "lp_arpa_lr" },
+            { label: "Total Number of ALP ARPA LR available on Board", key: "alp_arpa_lr" }
+        ];
+
+        const blockMapT7 = [
+            [0, 1, 1, 1, 1, 1, 1], 
+            [0, 1, 1, 1, 1, 1, 1], 
+            [1, 0, 1, 1, 1, 1, 1], 
+            [1, 0, 1, 1, 1, 1, 1], 
+            [1, 1, 0, 1, 1, 1, 1], 
+            [1, 1, 0, 1, 1, 1, 1], 
+            [1, 1, 0, 1, 1, 1, 1], 
+            [1, 1, 0, 1, 1, 1, 1], 
+            [1, 1, 1, 0, 0, 1, 1], 
+            [1, 1, 1, 0, 0, 1, 1], 
+            [1, 1, 1, 1, 1, 0, 1], 
+            [1, 1, 1, 1, 1, 0, 1], 
+            [1, 1, 1, 1, 1, 0, 1], 
+            [1, 1, 1, 1, 1, 0, 1], 
+            [1, 1, 1, 1, 1, 1, 0], 
+            [1, 1, 1, 1, 1, 1, 0], 
+            [1, 1, 1, 1, 1, 1, 0], 
+            [1, 1, 1, 1, 1, 1, 0]  
+        ];
+
         const colsT1 = ['os_crew_to', ...SUB_STATIONS.map((_, i) => `sub_${i+1}`)];
         const colsT2 = ['os_crew_set', ...SUB_STATIONS.map((_, i) => `sub_${i+1}`)];
         const colsT3 = ['up_to', 'dn_to', 'total_to', 'hq_crew_to', 'os_crew_to_t3', 'shuttling_to', 'pilot_to', 'banking_to', 'dh_pp', 'tke'];
@@ -459,7 +528,10 @@
         }
 
         function renderBlankLayout() {
-            ['table1Body', 'table2Body', 'table3Body', 'table4Body', 'table5Body', 'table6Body'].forEach(id => document.getElementById(id).innerHTML = '');
+            ['table1Body', 'table2Body', 'table3Body', 'table4Body', 'table5Body', 'table6Body', 'table7Body'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.innerHTML = '';
+            });
 
             LOBBIES.forEach(lobby => {
                 document.getElementById('table1Body').innerHTML += generateRowHtml(lobby, blockMapT1[lobby], colsT1, 'T1');
@@ -468,6 +540,20 @@
                 document.getElementById('table4Body').innerHTML += generateRowHtml(lobby, blockMapT4[lobby], colsT4, 'T4');
                 document.getElementById('table5Body').innerHTML += generateRowHtml(lobby, blockMapT5[lobby], colsT5, 'T5');
                 document.getElementById('table6Body').innerHTML += generateRowHtml(lobby, blockMapT6[lobby], colsT6, 'T6');
+            });
+
+            CRACK_ROWS.forEach((rowObj, rIdx) => {
+                let rowHtml = `<tr><td class="font-bold text-left pl-4 sticky left-0 bg-slate-100 dark:bg-slate-800 border-r-2 border-black dark:border-white z-10">${rowObj.label}</td>`;
+                CRACK_LOBBIES.forEach((lobby, cIdx) => {
+                    const isBlocked = blockMapT7[rIdx][cIdx];
+                    if (isBlocked === 1) {
+                        rowHtml += `<td class="blocked-cell"></td>`;
+                    } else {
+                        rowHtml += `<td id="T7_${lobby}_${rowObj.key}" class="font-bold">-</td>`;
+                    }
+                });
+                rowHtml += `<td id="T7_TOTAL_${rowObj.key}" class="font-black bg-slate-200 dark:bg-slate-700">-</td></tr>`;
+                document.getElementById('table7Body').innerHTML += rowHtml;
             });
 
             document.getElementById('table1Body').innerHTML += generateTotalRowHtml(colsT1, 'T1');
@@ -570,6 +656,8 @@
             calculateTotals('T4', colsT4, blockMapT4);
             calculateTotals('T5', colsT5, blockMapT5);
             
+            calculateTable7Totals();
+
             computeExecutiveKPIs();
             document.getElementById('loadingText').classList.add('hidden');
         }
@@ -643,6 +731,27 @@
 
                 if (cleanHeader.includes("LAST UP TO TIME")) updateCell(`T6_${lobby}_last_up_time`, rawVal || "-");
                 if (cleanHeader.includes("LAST DN TO TIME")) updateCell(`T6_${lobby}_last_dn_time`, rawVal || "-");
+
+                if (CRACK_LOBBIES.includes(lobby)) {
+                    if (cleanHeader.includes("LP PND LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_pnd_lr`, val);
+                    if (cleanHeader.includes("ALP PND LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_pnd_lr`, val);
+                    if (cleanHeader.includes("LP BSP LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_bsp_lr`, val);
+                    if (cleanHeader.includes("ALP BSP LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_bsp_lr`, val);
+                    if (cleanHeader.includes("DGG INCOMING CREW")) updateCell(`T7_${lobby}_dgg_incoming`, val);
+                    if (cleanHeader.includes("DGG OUTGOING CREW")) updateCell(`T7_${lobby}_dgg_outgoing`, val);
+                    if (cleanHeader.includes("LP VYAS LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_vyas_lr`, val);
+                    if (cleanHeader.includes("ALP VYAS LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_vyas_lr`, val);
+                    if (cleanHeader.includes("DBEC INCOMING CREW")) updateCell(`T7_${lobby}_dbec_incoming`, val);
+                    if (cleanHeader.includes("DBEC OUTGOING CREW")) updateCell(`T7_${lobby}_dbec_outgoing`, val);
+                    if (cleanHeader.includes("SGO INCOMING CREW")) updateCell(`T7_${lobby}_sgo_incoming`, val);
+                    if (cleanHeader.includes("SGO OUTGOING CREW")) updateCell(`T7_${lobby}_sgo_outgoing`, val);
+                    if (cleanHeader.includes("LP S/BULLET LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_sbullet_lr`, val);
+                    if (cleanHeader.includes("ALP S/BULLET LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_sbullet_lr`, val);
+                    if (cleanHeader.includes("NKJ INCOMING CREW")) updateCell(`T7_${lobby}_nkj_incoming`, val);
+                    if (cleanHeader.includes("NKJ OUTGOING CREW")) updateCell(`T7_${lobby}_nkj_outgoing`, val);
+                    if (cleanHeader.includes("LP ARPA LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_arpa_lr`, val);
+                    if (cleanHeader.includes("ALP ARPA LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_arpa_lr`, val);
+                }
             });
         }
 
@@ -685,7 +794,26 @@
             });
         }
 
-        // UPDATED: Dynamic calculation with newly added Sub-metrics Cards integration
+        function calculateTable7Totals() {
+            CRACK_ROWS.forEach((rowObj, rIdx) => {
+                let rowSum = 0;
+                let holdsData = false;
+                CRACK_LOBBIES.forEach((lobby, cIdx) => {
+                    if (blockMapT7[rIdx][cIdx] === 0) { 
+                        const cell = document.getElementById(`T7_${lobby}_${rowObj.key}`);
+                        if (cell && cell.innerText !== '-') {
+                            rowSum += parseInt(cell.innerText) || 0;
+                            holdsData = true;
+                        }
+                    }
+                });
+                const totalCell = document.getElementById(`T7_TOTAL_${rowObj.key}`);
+                if (totalCell) {
+                    totalCell.innerText = holdsData ? rowSum : '0';
+                }
+            });
+        }
+
         function computeExecutiveKPIs() {
             const totalTo = parseInt(document.getElementById('T3_TOTAL_total_to').innerText) || 0;
             const upTo = parseInt(document.getElementById('T3_TOTAL_up_to').innerText) || 0;
@@ -703,14 +831,12 @@
             const alpPr = parseInt(document.getElementById('T4_TOTAL_alp_board_pr').innerText) || 0;
             const alpNoPr = parseInt(document.getElementById('T4_TOTAL_alp_board_no_pr').innerText) || 0;
 
-            // Main Core KPIs
             document.getElementById('kpi_total_to').innerText = totalTo;
             document.getElementById('kpi_lp_anytime').innerText = lpAnytime;
             document.getElementById('kpi_alp_anytime').innerText = alpAnytime;
             document.getElementById('kpi_os_sets').innerText = osSets;
             document.getElementById('kpi_total_tke').innerText = totalTke;
 
-            // Dynamic Sub-Cards mapping inside Total Train Orders Card
             document.getElementById('card_up_to').innerText = upTo;
             document.getElementById('card_dn_to').innerText = dnTo;
             document.getElementById('card_hq_to').innerText = hqCrewTo;
@@ -743,7 +869,8 @@
                 { id: "excel_T4", name: "HQ Crew Availability (T4)" },
                 { id: "excel_T5", name: "Off Leave Pipeline (T5)" },
                 { id: "excel_T1", name: "O_S Crew Train Orders (T1)" },
-                { id: "excel_T2", name: "O_S Crew Sets (T2)" }
+                { id: "excel_T2", name: "O_S Crew Sets (T2)" },
+                { id: "excel_T7", name: "Crack Run Particulars (T7)" }
             ];
 
             tablesConfig.forEach(config => {
