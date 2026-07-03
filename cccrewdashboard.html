@@ -166,12 +166,34 @@
 
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
             <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">Total Train Orders</span>
-                <div class="flex items-baseline gap-2 mt-2">
-                    <span id="kpi_total_to" class="text-3xl font-black">-</span>
-                    <span class="text-xs font-bold text-emerald-800 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-300">Active</span>
+                <div>
+                    <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-1.5 mb-2">
+                        <span class="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">Total Train Orders</span>
+                        <span class="text-[10px] font-black text-emerald-800 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-300">Active</span>
+                    </div>
+                    <div class="text-3xl font-black tracking-tight mb-3" id="kpi_total_to">-</div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-x-2 gap-y-1.5 pt-2 border-t border-dashed border-slate-200 dark:border-slate-700">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase">Total UP</p>
+                        <p class="text-xs font-extrabold text-blue-600 dark:text-blue-400" id="card_up_to">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase">Total DN</p>
+                        <p class="text-xs font-extrabold text-blue-600 dark:text-blue-400" id="card_dn_to">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase">HQ Crew</p>
+                        <p class="text-xs font-extrabold text-slate-700 dark:text-slate-300" id="card_hq_to">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase">O/S Crew</p>
+                        <p class="text-xs font-extrabold text-slate-700 dark:text-slate-300" id="card_os_to">-</p>
+                    </div>
                 </div>
             </div>
+
             <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col justify-between">
                 <span class="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">Any Time LP Available</span>
                 <div class="flex items-baseline gap-2 mt-2">
@@ -347,7 +369,6 @@
         
         const colsT1 = ['os_crew_to', ...SUB_STATIONS.map((_, i) => `sub_${i+1}`)];
         const colsT2 = ['os_crew_set', ...SUB_STATIONS.map((_, i) => `sub_${i+1}`)];
-        // UPDATED COLS T3 TO INCLUDE THE NEW KEY BEFORE TKE
         const colsT3 = ['up_to', 'dn_to', 'total_to', 'hq_crew_to', 'os_crew_to_t3', 'shuttling_to', 'pilot_to', 'banking_to', 'dh_pp', 'tke'];
         const colsT4 = ['lp_board_pr', 'lp_pr_given', 'lp_board_no_pr', 'lp_anytime_avail', 'alp_board_pr', 'alp_pr_given', 'alp_board_no_pr', 'alp_anytime_avail'];
         const colsT5 = ['off_lp_02', 'off_lp_06', 'off_alp_02', 'off_alp_06'];
@@ -375,7 +396,6 @@
         let trafficChartInstance = null;
         let crewChartInstance = null;
 
-        // Theme Toggle State Engine
         function toggleTheme() {
             const isDark = document.documentElement.classList.toggle('dark');
             const icon = document.getElementById('themeIcon');
@@ -593,7 +613,6 @@
                 if (cleanHeader.includes("TOTAL NUMBER OF BANKING ENGINE TO")) updateCell(`T3_${lobby}_banking_to`, val);
                 if (cleanHeader.includes("TOTAL NUMBER OF TKE")) updateCell(`T3_${lobby}_tke`, val);
                 
-                // MAP DYNAMIC HEADER LOGIC FOR THE NEW COLUMN (Adjust string match to fit exact Sheet Header)
                 if (cleanHeader.includes("DOUBLE HEAD") || cleanHeader.includes("PUSH PULL")) updateCell(`T3_${lobby}_dh_pp`, val);
 
                 if (cleanHeader.includes("TOTAL NUMBER OF UP TO") || cleanHeader.includes("TOTAL NUMBER OF DN TO")) {
@@ -666,8 +685,14 @@
             });
         }
 
+        // UPDATED: Dynamic calculation with newly added Sub-metrics Cards integration
         function computeExecutiveKPIs() {
             const totalTo = parseInt(document.getElementById('T3_TOTAL_total_to').innerText) || 0;
+            const upTo = parseInt(document.getElementById('T3_TOTAL_up_to').innerText) || 0;
+            const dnTo = parseInt(document.getElementById('T3_TOTAL_dn_to').innerText) || 0;
+            const hqCrewTo = parseInt(document.getElementById('T3_TOTAL_hq_crew_to').innerText) || 0;
+            const osCrewTo = parseInt(document.getElementById('T3_TOTAL_os_crew_to_t3').innerText) || 0;
+
             const lpAnytime = parseInt(document.getElementById('T4_TOTAL_lp_anytime_avail').innerText) || 0;
             const alpAnytime = parseInt(document.getElementById('T4_TOTAL_alp_anytime_avail').innerText) || 0;
             const osSets = parseInt(document.getElementById('T2_TOTAL_os_crew_set').innerText) || 0;
@@ -678,11 +703,18 @@
             const alpPr = parseInt(document.getElementById('T4_TOTAL_alp_board_pr').innerText) || 0;
             const alpNoPr = parseInt(document.getElementById('T4_TOTAL_alp_board_no_pr').innerText) || 0;
 
+            // Main Core KPIs
             document.getElementById('kpi_total_to').innerText = totalTo;
             document.getElementById('kpi_lp_anytime').innerText = lpAnytime;
             document.getElementById('kpi_alp_anytime').innerText = alpAnytime;
             document.getElementById('kpi_os_sets').innerText = osSets;
             document.getElementById('kpi_total_tke').innerText = totalTke;
+
+            // Dynamic Sub-Cards mapping inside Total Train Orders Card
+            document.getElementById('card_up_to').innerText = upTo;
+            document.getElementById('card_dn_to').innerText = dnTo;
+            document.getElementById('card_hq_to').innerText = hqCrewTo;
+            document.getElementById('card_os_to').innerText = osCrewTo;
 
             const upTrafficDataset = [];
             const dnTrafficDataset = [];
