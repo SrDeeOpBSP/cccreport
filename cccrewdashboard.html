@@ -27,7 +27,7 @@
     </script>
     
     <!-- Google Fonts & FontAwesome Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&family=JetBrains+Mono:wght=500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- ChartJS & SheetJS Infrastructure -->
@@ -606,24 +606,9 @@
             });
         }
 
-        function normalizeDateString(dateStr) {
-            if (!dateStr) return "";
-            let cleanStr = dateStr.trim().replace(/\s+/g, '');
-            let parts = cleanStr.split(/[-/]/);
-            if (parts.length === 3) {
-                if (parts[0].length === 4) {
-                    return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
-                }
-                if (parts[2].length === 4) {
-                    return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-                }
-            }
-            return cleanStr;
-        }
-
         async function fetchMasterDashboardData() {
-            const targetTime = document.getElementById('positionTime').value.trim().toLowerCase().replace(/\s+/g, ''); 
-            const targetDate = normalizeDateString(document.getElementById('fromDate').value); 
+            const targetTime = document.getElementById('positionTime').value; 
+            const targetDate = document.getElementById('fromDate').value; 
             
             document.getElementById('loadingText').classList.remove('hidden');
             renderBlankLayout(); 
@@ -632,13 +617,11 @@
 
             for (const lobby of LOBBIES) {
                 try {
-                    // CHANGED: Increased the cell fetch limit from A1:BA100 to A1:BA5000 to fetch dynamically added rows beyond 100
-                    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${lobby}!A1:BA5000?key=${API_KEY}`;
+                    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${lobby}!A1:BA10000?key=${API_KEY}`;
                     const response = await fetch(url);
                     const result = await response.json();
 
                     if (response.status !== 200 || !result.values || result.values.length <= 1) {
-                        console.warn(`API Error or empty sheet for lobby: ${lobby}`);
                         missingLobbies.push(lobby); continue;
                     }
 
@@ -647,24 +630,18 @@
 
                     for (let i = result.values.length - 1; i > 0; i--) {
                         const row = result.values[i];
-                        const rowDate = row[1] ? normalizeDateString(row[1]) : ""; 
-                        const rowTime = row[2] ? row[2].trim().toLowerCase().replace(/\s+/g, '') : ""; 
+                        const rowDate = row[1] ? row[1].trim() : ""; 
+                        const rowTime = row[2] ? row[2].trim() : ""; 
                         
-                        // Handled variations like '12:00hrs' matching seamlessly with '12:00'
-                        const isTimeMatch = rowTime.includes(targetTime);
+                        const isTimeMatch = rowTime.toLowerCase().replace(/\s+/g, '').includes(targetTime.replace(/\s+/g, '').toLowerCase());
                         const isDateMatch = (rowDate === targetDate);
 
                         if (isTimeMatch && isDateMatch) { targetRow = row; break; }
                     }
 
-                    if (targetRow) {
-                        parseAndFillLobby(lobby, headers, targetRow);
-                    } else {
-                        console.info(`No matching rows found for date: ${targetDate} time: ${targetTime} in lobby: ${lobby}`);
-                        missingLobbies.push(lobby);
-                    }
+                    if (targetRow) parseAndFillLobby(lobby, headers, targetRow);
+                    else missingLobbies.push(lobby);
                 } catch (err) {
-                    console.error(`Error processing data stream for lobby ${lobby}:`, err);
                     missingLobbies.push(lobby);
                 }
             }
@@ -713,64 +690,64 @@
                 const val = parseInt(rawVal) || 0;
                 let cleanHeader = header.toUpperCase().replace(/\s+/g, ' ').trim();
 
-                if (cleanHeader.includes("UP TO")) updateCell(`T3_${lobby}_up_to`, val);
-                if (cleanHeader.includes("DN TO")) updateCell(`T3_${lobby}_dn_to`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF UP TO")) updateCell(`T3_${lobby}_up_to`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF DN TO")) updateCell(`T3_${lobby}_dn_to`, val);
                 if (cleanHeader.includes("HQ CREW TO")) updateCell(`T3_${lobby}_hq_crew_to`, val);
-                if (cleanHeader.includes("O/S CREW TO") || cleanHeader.includes("OS CREW TO")) updateCell(`T3_${lobby}_os_crew_to_t3`, val);
-                if (cleanHeader.includes("SHUTTLING TO")) updateCell(`T3_${lobby}_shuttling_to`, val);
-                if (cleanHeader.includes("PILOT TO")) updateCell(`T3_${lobby}_pilot_to`, val);
-                if (cleanHeader.includes("BANKING ENGINE TO") || cleanHeader.includes("BANKING TO")) updateCell(`T3_${lobby}_banking_to`, val);
-                if (cleanHeader.includes("TKE")) updateCell(`T3_${lobby}_tke`, val);
+                if (cleanHeader.includes("O/S CREW TO")) updateCell(`T3_${lobby}_os_crew_to_t3`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF SHUTTLING TO")) updateCell(`T3_${lobby}_shuttling_to`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF PILOT TO")) updateCell(`T3_${lobby}_pilot_to`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF BANKING ENGINE TO")) updateCell(`T3_${lobby}_banking_to`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF TKE")) updateCell(`T3_${lobby}_tke`, val);
                 if (cleanHeader.includes("DOUBLE HEAD") || cleanHeader.includes("PUSH PULL")) updateCell(`T3_${lobby}_dh_pp`, val);
 
-                if (cleanHeader.includes("UP TO") || cleanHeader.includes("DN TO")) {
+                if (cleanHeader.includes("TOTAL NUMBER OF UP TO") || cleanHeader.includes("TOTAL NUMBER OF DN TO")) {
                     totalToSum += val; updateCell(`T3_${lobby}_total_to`, totalToSum);
                 }
 
-                if (cleanHeader.includes("O/S CREW TO") || cleanHeader.includes("OS CREW TO")) updateCell('T1_' + lobby + '_os_crew_to', val);
+                if (cleanHeader.includes("O/S CREW TO")) updateCell(`T1_${lobby}_os_crew_to`, val);
                 SUB_STATIONS.forEach((station, sIdx) => {
-                    if (cleanHeader.includes(`OS TO ${station}`) || cleanHeader === `OS TO ${station}`) updateCell(`T1_${lobby}_sub_${sIdx+1}`, val);
+                    if (cleanHeader === `OS TO ${station}`) updateCell(`T1_${lobby}_sub_${sIdx+1}`, val);
                 });
                 
-                if (cleanHeader.includes("O/S CREW SET") || cleanHeader.includes("OS CREW SET")) updateCell(`T2_${lobby}_os_crew_set`, val);
+                if (cleanHeader.includes("O/S CREW SET AVAILABLE")) updateCell(`T2_${lobby}_os_crew_set`, val);
                 SUB_STATIONS.forEach((station, sIdx) => {
-                    if (cleanHeader.includes(`OS SET ${station}`) || cleanHeader === `OS SET ${station}`) updateCell(`T2_${lobby}_sub_${sIdx+1}`, val);
+                    if (cleanHeader === `OS SET ${station}`) updateCell(`T2_${lobby}_sub_${sIdx+1}`, val);
                 });
 
-                if (cleanHeader.includes("LP AVAILABLE") && cleanHeader.includes("WITH PR")) updateCell(`T4_${lobby}_lp_board_pr`, val);
-                if (cleanHeader.includes("LP PR GIVEN")) updateCell(`T4_${lobby}_lp_pr_given`, val);
-                if (cleanHeader.includes("LP ANYTIME AVAILABLE") || cleanHeader.includes("LP ANYTIME AVAIL")) updateCell(`T4_${lobby}_lp_anytime_avail`, val);
-                if (cleanHeader.includes("ALP AVAILABLE") && cleanHeader.includes("WITH PR")) updateCell(`T4_${lobby}_alp_board_pr`, val);
-                if (cleanHeader.includes("ALP PR GIVEN")) updateCell(`T4_${lobby}_alp_pr_given`, val);
-                if (cleanHeader.includes("ALP ANYTIME AVAILABLE") || cleanHeader.includes("ALP ANYTIME AVAIL")) updateCell(`T4_${lobby}_alp_anytime_avail`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF LP AVAILABLE ON BOARD WITH PR")) updateCell(`T4_${lobby}_lp_board_pr`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF LP PR GIVEN")) updateCell(`T4_${lobby}_lp_pr_given`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF LP ANYTIME AVAILABLE")) updateCell(`T4_${lobby}_lp_anytime_avail`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF ALP AVAILABLE ON BOARD WITH PR")) updateCell(`T4_${lobby}_alp_board_pr`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF ALP PR GIVEN")) updateCell(`T4_${lobby}_alp_pr_given`, val);
+                if (cleanHeader.includes("TOTAL NUMBER OF ALP ANYTIME AVAILABLE")) updateCell(`T4_${lobby}_alp_anytime_avail`, val);
 
-                if (cleanHeader.includes("OFF LEAVE LP 02") || cleanHeader.includes("OFF LEAVE LP 02:00")) updateCell(`T5_${lobby}_off_lp_02`, val);
-                if (cleanHeader.includes("OFF LEAVE LP 06") || cleanHeader.includes("OFF LEAVE LP 06:00")) updateCell(`T5_${lobby}_off_lp_06`, val);
-                if (cleanHeader.includes("OFF LEAVE ALP 02") || cleanHeader.includes("OFF LEAVE ALP 02:00")) updateCell(`T5_${lobby}_off_alp_02`, val);
-                if (cleanHeader.includes("OFF LEAVE ALP 06") || cleanHeader.includes("OFF LEAVE ALP 06:00")) updateCell(`T5_${lobby}_off_alp_06`, val);
+                if (cleanHeader.includes("OFF LEAVE LP 02:00HRS")) updateCell(`T5_${lobby}_off_lp_02`, val);
+                if (cleanHeader.includes("OFF LEAVE LP 06:00HRS")) updateCell(`T5_${lobby}_off_lp_06`, val);
+                if (cleanHeader.includes("OFF LEAVE ALP 02:00HRS")) updateCell(`T5_${lobby}_off_alp_02`, val);
+                if (cleanHeader.includes("OFF LEAVE ALP 06:00HRS")) updateCell(`T5_${lobby}_off_alp_06`, val);
 
                 if (cleanHeader.includes("LAST UP TO TIME")) updateCell(`T6_${lobby}_last_up_time`, rawVal || "-");
                 if (cleanHeader.includes("LAST DN TO TIME")) updateCell(`T6_${lobby}_last_dn_time`, rawVal || "-");
 
                 if (CRACK_LOBBIES.includes(lobby)) {
-                    if (cleanHeader.includes("LP PND LR")) updateCell(`T7_${lobby}_lp_pnd_lr`, val);
-                    if (cleanHeader.includes("ALP PND LR")) updateCell(`T7_${lobby}_alp_pnd_lr`, val);
-                    if (cleanHeader.includes("LP BSP LR")) updateCell(`T7_${lobby}_lp_bsp_lr`, val);
-                    if (cleanHeader.includes("ALP BSP LR")) updateCell(`T7_${lobby}_alp_bsp_lr`, val);
-                    if (cleanHeader.includes("DGG INCOMING")) updateCell(`T7_${lobby}_dgg_incoming`, val);
-                    if (cleanHeader.includes("DGG OUTGOING")) updateCell(`T7_${lobby}_dgg_outgoing`, val);
-                    if (cleanHeader.includes("LP VYAS LR")) updateCell(`T7_${lobby}_lp_vyas_lr`, val);
-                    if (cleanHeader.includes("ALP VYAS LR")) updateCell(`T7_${lobby}_alp_bsp_lr`, val);
-                    if (cleanHeader.includes("DBEC INCOMING")) updateCell(`T7_${lobby}_dbec_incoming`, val);
-                    if (cleanHeader.includes("DBEC OUTGOING")) updateCell(`T7_${lobby}_dbec_outgoing`, val);
-                    if (cleanHeader.includes("SGO INCOMING")) updateCell(`T7_${lobby}_sgo_incoming`, val);
-                    if (cleanHeader.includes("SGO OUTGOING")) updateCell(`T7_${lobby}_sgo_outgoing`, val);
-                    if (cleanHeader.includes("LP S/BULLET LR")) updateCell(`T7_${lobby}_lp_sbullet_lr`, val);
-                    if (cleanHeader.includes("ALP S/BULLET LR")) updateCell(`T7_${lobby}_alp_sbullet_lr`, val);
-                    if (cleanHeader.includes("NKJ INCOMING")) updateCell(`T7_${lobby}_nkj_incoming`, val);
-                    if (cleanHeader.includes("NKJ OUTGOING")) updateCell(`T7_${lobby}_nkj_outgoing`, val);
-                    if (cleanHeader.includes("LP ARPA LR")) updateCell(`T7_${lobby}_lp_arpa_lr`, val);
-                    if (cleanHeader.includes("ALP ARPA LR")) updateCell(`T7_${lobby}_alp_arpa_lr`, val);
+                    if (cleanHeader.includes("LP PND LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_pnd_lr`, val);
+                    if (cleanHeader.includes("ALP PND LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_pnd_lr`, val);
+                    if (cleanHeader.includes("LP BSP LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_bsp_lr`, val);
+                    if (cleanHeader.includes("ALP BSP LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_bsp_lr`, val);
+                    if (cleanHeader.includes("DGG INCOMING CREW")) updateCell(`T7_${lobby}_dgg_incoming`, val);
+                    if (cleanHeader.includes("DGG OUTGOING CREW")) updateCell(`T7_${lobby}_dgg_outgoing`, val);
+                    if (cleanHeader.includes("LP VYAS LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_vyas_lr`, val);
+                    if (cleanHeader.includes("ALP VYAS LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_bsp_lr`, val);
+                    if (cleanHeader.includes("DBEC INCOMING CREW")) updateCell(`T7_${lobby}_dbec_incoming`, val);
+                    if (cleanHeader.includes("DBEC OUTGOING CREW")) updateCell(`T7_${lobby}_dbec_outgoing`, val);
+                    if (cleanHeader.includes("SGO INCOMING CREW")) updateCell(`T7_${lobby}_sgo_incoming`, val);
+                    if (cleanHeader.includes("SGO OUTGOING CREW")) updateCell(`T7_${lobby}_sgo_outgoing`, val);
+                    if (cleanHeader.includes("LP S/BULLET LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_sbullet_lr`, val);
+                    if (cleanHeader.includes("ALP S/BULLET LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_sbullet_lr`, val);
+                    if (cleanHeader.includes("NKJ INCOMING CREW")) updateCell(`T7_${lobby}_nkj_incoming`, val);
+                    if (cleanHeader.includes("NKJ OUTGOING CREW")) updateCell(`T7_${lobby}_nkj_outgoing`, val);
+                    if (cleanHeader.includes("LP ARPA LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_arpa_lr`, val);
+                    if (cleanHeader.includes("ALP ARPA LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_arpa_lr`, val);
                 }
             });
         }
