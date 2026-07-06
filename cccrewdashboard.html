@@ -4,17 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Crew Management Dashboard — Analytics Enterprise</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS with Custom Configurations -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            900: '#1e3a8a',
+                            950: '#0f172a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&family=JetBrains+Mono:wght=500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- ChartJS & SheetJS Infrastructure -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             transition: background-color 0.2s ease, color 0.2s ease;
         }
-        /* High Contrast Black Borders & Responsive Typography */
+        
+        /* Premium Core Tables Custom Layout */
         th, td {
             border: 1.5px solid #000000 !important;
             padding: 10px 8px;
@@ -25,11 +51,13 @@
             color: #000000;
             transition: all 0.15s ease;
         }
-        /* Dark Mode Table Overrides */
+
+        /* Dark Mode High-Contrast Table Overrides */
         .dark th, .dark td {
-            border: 1.5px solid #ffffff !important;
-            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #f1f5f9 !important;
         }
+
         th {
             background-color: #f1f5f9 !important;
             color: #000000 !important;
@@ -38,88 +66,71 @@
             font-size: 12px;
             letter-spacing: 0.02em;
         }
+
         .dark th {
-            background-color: #1e293b !important;
+            background: linear-gradient(180deg, #1e293b, #0f172a) !important;
+            color: #ffffff !important;
         }
+
+        /* Table Row Interaction Enhancements */
         tr:hover td:not(.blocked-cell) {
-            background-color: #e2e8f0;
+            background-color: #e2e8f0 !important;
         }
         .dark tr:hover td:not(.blocked-cell) {
-            background-color: #334155;
+            background-color: #1e3a5f !important;
         }
+
+        /* Diagonal Masking for Blocked Matrix Cells */
         .blocked-cell {
             background: repeating-linear-gradient(45deg, #a1a1aa, #a1a1aa 5px, #d4d4d8 5px, #d4d4d8 10px) !important;
             color: transparent !important;
         }
         .dark .blocked-cell {
-            background: repeating-linear-gradient(45deg, #4b5563, #4b5563 5px, #1f2937 5px, #1f2937 10px) !important;
+            background: repeating-linear-gradient(45deg, #334155, #334155 6px, #1e293b 6px, #1e293b 12px) !important;
+            color: transparent !important;
+            opacity: 0.4;
         }
-        .custom-scrollbar::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
+
+        .data-mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-track {
-            background: #1e293b;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-            border-radius: 4px;
-        }
+
+        /* Custom scrollbars */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .dark .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; }
+
+        /* Smooth Shadow Glows */
+        .glow-blue { box-shadow: 0 0 15px rgba(59, 130, 246, 0.08); }
+        .dark .glow-blue { box-shadow: 0 0 20px rgba(59, 130, 246, 0.15); }
     </style>
-
-<style id="premium-dark-patch">
-.dark body, .dark{
- --bg1:#020617;
- --bg2:#0f172a;
- --card:#111c2e;
-}
-.dark body{
- background:radial-gradient(circle at top,#1e3a8a 0%,#0f172a 30%,#020617 100%) fixed!important;
- color:#e5eefc!important;
-}
-.dark .bg-white,.dark [class*="bg-white"]{
- background:rgba(15,23,42,.72)!important;
- backdrop-filter:blur(14px);
- border-color:#334155!important;
- box-shadow:0 8px 24px rgba(0,0,0,.45);
-}
-.dark header{
- background:rgba(2,6,23,.86)!important;
- backdrop-filter:blur(16px);
-}
-.dark tr:hover td:not(.blocked-cell){
- background:#1e3a5f!important;
-}
-.dark th{
- background:linear-gradient(180deg,#243b63,#172554)!important;
-}
-.dark .custom-scrollbar::-webkit-scrollbar-thumb{
- background:#3b82f6;
-}
-</style>
-
 </head>
-<body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased min-h-screen pb-12">
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased min-h-screen pb-12 transition-colors duration-200">
 
-    <header class="bg-white dark:bg-slate-900 border-b-2 border-black dark:border-white sticky top-0 z-50 shadow-sm backdrop-blur-md">
+    <!-- Glowing Background Radial Mask for Dark Mode -->
+    <div class="hidden dark:block absolute top-0 left-1/4 right-1/4 h-[350px] bg-gradient-to-b from-blue-900/20 to-transparent blur-[120px] pointer-events-none"></div>
+
+    <header class="bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-b-2 border-black dark:border-slate-800 sticky top-0 z-50 shadow-xs">
         <div class="max-w-[98%] mx-auto px-4 py-3 flex flex-col xl:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="p-2 bg-blue-600 rounded-lg text-white shadow-md">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h2a2 2 0 01-2-2z"></path></svg>
+            <div class="flex items-center gap-3 w-full xl:w-auto">
+                <div class="p-2.5 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl text-white shadow-lg">
+                    <i class="fa-solid fa-train-subway text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-extrabold tracking-tight">Master Crew Management</h1>
-                    <p class="text-xs text-slate-600 dark:text-slate-400 font-bold">Real-time Synchronization Control Room</p>
+                    <h1 class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                        Master Crew Management <span class="bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-semibold px-2 py-0.5 rounded-full border border-blue-500/20">CONTROL ROOM</span>
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Real-time Synchronization Control Center</p>
                 </div>
             </div>
             
-            <div class="flex flex-wrap items-center gap-3 bg-slate-200 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-400 dark:border-slate-600 w-full xl:w-auto">
+            <div class="flex flex-wrap items-center gap-3 bg-slate-200 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-300 dark:border-slate-800 w-full xl:w-auto justify-between xl:justify-start">
                 <div class="flex items-center gap-1.5 px-2">
-                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Slot:</span>
-                    <select id="positionTime" class="text-xs font-black bg-white dark:bg-slate-900 border border-black dark:border-white rounded-lg p-1.5 focus:outline-none" onchange="fetchMasterDashboardData()">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400">Slot:</span>
+                    <select id="positionTime" class="text-xs font-black bg-white dark:bg-slate-800 border border-black dark:border-slate-700 text-slate-900 dark:text-white rounded-lg p-1.5 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer" onchange="fetchMasterDashboardData()">
                         <option value="00:00">00:00</option>
                         <option value="04:00">04:00</option>
                         <option value="08:00">08:00</option>
@@ -128,246 +139,245 @@
                         <option value="20:00">20:00</option>
                     </select>
                 </div>
-                <div class="h-4 w-px bg-slate-400 dark:bg-slate-600 hidden sm:block"></div>
+                <div class="h-4 w-px bg-slate-400 dark:bg-slate-700 hidden sm:block"></div>
                 <div class="flex items-center gap-1.5 px-2">
-                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">From:</span>
-                    <input type="date" id="fromDate" class="text-xs font-bold bg-white dark:bg-slate-900 border border-black dark:border-white rounded-lg p-1" onchange="fetchMasterDashboardData()">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400">From:</span>
+                    <input type="date" id="fromDate" class="text-xs font-bold bg-white dark:bg-slate-800 border border-black dark:border-slate-700 text-slate-900 dark:text-white rounded-lg p-1" onchange="fetchMasterDashboardData()">
                 </div>
                 <div class="flex items-center gap-1.5 px-2">
-                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">To:</span>
-                    <input type="date" id="toDate" class="text-xs font-bold bg-white dark:bg-slate-900 border border-black dark:border-white rounded-lg p-1" onchange="fetchMasterDashboardData()">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400">To:</span>
+                    <input type="date" id="toDate" class="text-xs font-bold bg-white dark:bg-slate-800 border border-black dark:border-slate-700 text-slate-900 dark:text-white rounded-lg p-1" onchange="fetchMasterDashboardData()">
                 </div>
-                <button onclick="fetchMasterDashboardData()" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold text-xs py-1.5 px-4 rounded-lg shadow-md border border-black dark:border-white cursor-pointer">
+                <button onclick="fetchMasterDashboardData()" class="bg-blue-700 hover:bg-blue-800 active:scale-95 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl shadow-md transition cursor-pointer">
                     Sync Engine
                 </button>
-                <div class="h-4 w-px bg-slate-400 dark:bg-slate-600"></div>
-                <button onclick="window.location.href='ccdashboard.html'" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs py-1.5 px-4 rounded-lg shadow-md border border-white cursor-pointer">Crew Controller Morning Report</button>
+                <div class="h-4 w-px bg-slate-400 dark:bg-slate-700"></div>
+                <button onclick="window.location.href='ccdashboard.html'" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl shadow-md transition cursor-pointer">Morning Report</button>
                 
-                <button onclick="exportDashboardToExcel()" class="bg-purple-700 hover:bg-purple-800 text-white font-extrabold text-xs py-1.5 px-4 rounded-lg shadow-md border border-black dark:border-white cursor-pointer flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    Export All to Excel
+                <button onclick="exportDashboardToExcel()" class="bg-purple-700 hover:bg-purple-800 active:scale-95 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl shadow-md transition cursor-pointer flex items-center gap-1">
+                    <i class="fa-solid fa-cloud-arrow-down text-xs"></i> Export All
                 </button>
 
-                <button onclick="toggleTheme()" class="p-1.5 rounded-lg bg-white dark:bg-slate-900 border border-black dark:border-white cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition">
-                    <svg id="themeIcon" class="w-4 h-4 text-slate-900 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
+                <button onclick="toggleTheme()" class="p-1.5 rounded-xl bg-white dark:bg-slate-800 border border-black dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                    <i id="themeIcon" class="fa-solid fa-sun text-slate-900 dark:text-amber-400 text-sm"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-[98%] mx-auto px-4 mt-6 space-y-6">
+    <main class="max-w-[98%] mx-auto px-4 mt-6 space-y-6 relative z-10">
         
         <div id="highlightPanel" class="rounded-xl border hidden shadow-sm transition-all duration-300"></div>
-        <div id="loadingText" class="text-center p-4 bg-blue-100 dark:bg-blue-950 text-blue-900 dark:text-blue-200 rounded-xl font-bold text-sm border-2 border-blue-400 hidden animate-pulse">
+        <div id="loadingText" class="text-center p-4 bg-blue-100 dark:bg-blue-950/40 text-blue-900 dark:text-blue-400 border border-blue-400/30 rounded-xl font-bold text-sm hidden animate-pulse">
             ⚡ Fetching synchronized runtime datasets from Google Sheets Engine...
         </div>
 
+        <!-- KPI Block Deck Grid -->
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+            <div class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between glow-blue">
                 <div>
-                    <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-1.5 mb-2">
-                        <span class="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">Total Train Orders</span>
-                        <span class="text-[10px] font-black text-emerald-800 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-300">Active</span>
+                    <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-1.5 mb-2">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Total Train Orders</span>
+                        <span class="text-[10px] font-black text-emerald-800 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-300 dark:border-emerald-800">Active</span>
                     </div>
-                    <div class="text-3xl font-black tracking-tight mb-3" id="kpi_total_to">-</div>
+                    <div class="text-3xl font-black tracking-tight mb-3 data-mono text-slate-900 dark:text-white" id="kpi_total_to">-</div>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-x-2 gap-y-1.5 pt-2 border-t border-dashed border-slate-200 dark:border-slate-700">
+                <div class="grid grid-cols-2 gap-x-2 gap-y-1.5 pt-2 border-t border-dashed border-slate-200 dark:border-slate-800">
                     <div>
-                        <p class="text-[10px] font-bold text-slate-500 uppercase">Total UP</p>
-                        <p class="text-xs font-extrabold text-blue-600 dark:text-blue-400" id="card_up_to">-</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Total UP</p>
+                        <p class="text-xs font-extrabold text-blue-600 dark:text-blue-400 data-mono" id="card_up_to">-</p>
                     </div>
                     <div>
-                        <p class="text-[10px] font-bold text-slate-500 uppercase">Total DN</p>
-                        <p class="text-xs font-extrabold text-blue-600 dark:text-blue-400" id="card_dn_to">-</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Total DN</p>
+                        <p class="text-xs font-extrabold text-blue-600 dark:text-blue-400 data-mono" id="card_dn_to">-</p>
                     </div>
                     <div>
-                        <p class="text-[10px] font-bold text-slate-500 uppercase">HQ Crew</p>
-                        <p class="text-xs font-extrabold text-slate-700 dark:text-slate-300" id="card_hq_to">-</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">HQ Crew</p>
+                        <p class="text-xs font-extrabold text-slate-700 dark:text-slate-300 data-mono" id="card_hq_to">-</p>
                     </div>
                     <div>
-                        <p class="text-[10px] font-bold text-slate-500 uppercase">O/S Crew</p>
-                        <p class="text-xs font-extrabold text-slate-700 dark:text-slate-300" id="card_os_to">-</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">O/S Crew</p>
+                        <p class="text-xs font-extrabold text-slate-700 dark:text-slate-300 data-mono" id="card_os_to">-</p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">Any Time LP Available</span>
+            <div class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between glow-blue">
+                <span class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Any Time LP Available</span>
                 <div class="flex items-baseline gap-2 mt-2">
-                    <span id="kpi_lp_anytime" class="text-3xl font-black text-blue-600 dark:text-blue-400">-</span>
-                    <span class="text-xs text-slate-500 font-bold">Ready</span>
+                    <span id="kpi_lp_anytime" class="text-3xl font-black text-blue-600 dark:text-blue-400 data-mono">-</span>
+                    <span class="text-xs text-slate-400 font-bold">Ready</span>
                 </div>
             </div>
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">Any Time ALP Available</span>
+            <div class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between glow-blue">
+                <span class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Any Time ALP Available</span>
                 <div class="flex items-baseline gap-2 mt-2">
-                    <span id="kpi_alp_anytime" class="text-3xl font-black text-indigo-600 dark:text-indigo-400">-</span>
-                    <span class="text-xs text-slate-500 font-bold">Ready</span>
+                    <span id="kpi_alp_anytime" class="text-3xl font-black text-indigo-600 dark:text-indigo-400 data-mono">-</span>
+                    <span class="text-xs text-slate-400 font-bold">Ready</span>
                 </div>
             </div>
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">Total Outstation Crew Sets</span>
+            <div class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between glow-blue">
+                <span class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Total Outstation Crew Sets</span>
                 <div class="flex items-baseline gap-2 mt-2">
-                    <span id="kpi_os_sets" class="text-3xl font-black text-slate-800 dark:text-slate-200">-</span>
-                    <span class="text-xs font-bold text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-950 px-1.5 py-0.5 rounded border border-amber-300">Rest</span>
+                    <span id="kpi_os_sets" class="text-3xl font-black text-slate-800 dark:text-slate-200 data-mono">-</span>
+                    <span class="text-xs font-bold text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-300 dark:border-amber-800">Rest</span>
                 </div>
             </div>
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col justify-between col-span-2 lg:col-span-1">
-                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">Total TKE Logs</span>
+            <div class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between col-span-2 lg:col-span-1 glow-blue">
+                <span class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Total TKE Logs</span>
                 <div class="flex items-baseline gap-2 mt-2">
-                    <span id="kpi_total_tke" class="text-3xl font-black text-rose-600 dark:text-rose-400">-</span>
-                    <span class="text-xs text-slate-500 font-bold">En Route</span>
+                    <span id="kpi_total_tke" class="text-3xl font-black text-rose-600 dark:text-rose-400 data-mono">-</span>
+                    <span class="text-xs text-slate-400 font-bold">En Route</span>
                 </div>
             </div>
         </div>
 
+        <!-- Charts Display Matrix Setup -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm lg:col-span-2">
-                <h3 class="text-xs font-black text-slate-500 tracking-wider uppercase mb-4">Lobby-wise Freight Traffic Volume Breakdown</h3>
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-300 dark:border-slate-800 shadow-sm lg:col-span-2">
+                <h3 class="text-xs font-black text-slate-400 tracking-wider uppercase mb-4">Lobby-wise Freight Traffic Volume Breakdown</h3>
                 <div class="h-[260px] w-full relative">
                     <canvas id="trafficVolumeChart"></canvas>
                 </div>
             </div>
-            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm">
-                <h3 class="text-xs font-black text-slate-500 tracking-wider uppercase mb-4">Crew Availability Profile Structure</h3>
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-300 dark:border-slate-800 shadow-sm">
+                <h3 class="text-xs font-black text-slate-400 tracking-wider uppercase mb-4">Crew Availability Profile Structure</h3>
                 <div class="h-[260px] w-full relative flex justify-center">
                     <canvas id="crewDistributionChart"></canvas>
                 </div>
             </div>
         </div>
 
+        <!-- Core Tables Deck -->
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-white shadow-md overflow-hidden xl:col-span-8">
-                <div class="bg-slate-900 dark:bg-slate-800 px-4 py-3 border-b-2 border-black dark:border-white flex justify-between items-center">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border-2 border-black dark:border-slate-800 shadow-md overflow-hidden xl:col-span-8">
+                <div class="bg-slate-900 dark:bg-slate-800 px-4 py-3 border-b-2 border-black dark:border-slate-700 flex justify-between items-center">
                     <h2 class="text-base font-black text-white tracking-wide uppercase">Train Order Operational Particulars</h2>
                 </div>
                 <div class="overflow-x-auto custom-scrollbar">
                     <table id="excel_T3" class="w-full border-collapse">
                         <thead>
                             <tr>
-                                <th class="w-24 sticky left-0 bg-slate-200 dark:bg-slate-700 shadow-md z-10">Lobby</th>
+                                <th class="w-24 sticky left-0 bg-slate-200 dark:bg-slate-800 shadow-md z-10">Lobby</th>
                                 <th>Total UP TO</th>
                                 <th>Total DN TO</th>
-                                <th class="bg-blue-100 dark:bg-blue-950 font-black">TOTAL TO</th>
+                                <th class="bg-blue-100 dark:bg-blue-950 text-blue-900 dark:text-blue-400 font-black">TOTAL TO</th>
                                 <th>HQ Crew TO</th>
                                 <th>O/S Crew TO</th>
                                 <th>Shuttling TO</th>
                                 <th>Pilot TO</th>
                                 <th>Banking Engine TO</th>
-                                <th class="bg-indigo-50 dark:bg-indigo-950/40">Total Number of Double Head/<br>Push Pull Loco Run</th>
-                                <th class="bg-rose-100 dark:bg-rose-950">Total TKE</th>
+                                <th class="bg-indigo-50 dark:bg-indigo-950/40">Double Head/<br>Push Pull Loco Run</th>
+                                <th class="bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-400">Total TKE</th>
                             </tr>
                         </thead>
-                        <tbody id="table3Body" class="divide-y divide-black dark:divide-white"></tbody>
+                        <tbody id="table3Body" class="divide-y divide-black dark:divide-slate-800 data-mono"></tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-white shadow-md overflow-hidden xl:col-span-4">
-                <div class="bg-slate-900 dark:bg-slate-800 px-4 py-3 border-b-2 border-black dark:border-white flex justify-between items-center">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border-2 border-black dark:border-slate-800 shadow-md overflow-hidden xl:col-span-4">
+                <div class="bg-slate-900 dark:bg-slate-800 px-4 py-3 border-b-2 border-black dark:border-slate-700 flex justify-between items-center">
                     <h2 class="text-base font-black text-white tracking-wide uppercase">Last To Particulars</h2>
                 </div>
                 <div class="overflow-x-auto custom-scrollbar">
                     <table id="excel_T6" class="w-full border-collapse">
                         <thead>
                             <tr>
-                                <th class="w-24 sticky left-0 bg-slate-200 dark:bg-slate-700 shadow-md z-10">Lobby</th>
+                                <th class="w-24 sticky left-0 bg-slate-200 dark:bg-slate-800 shadow-md z-10">Lobby</th>
                                 <th>Last UP<br>TO Time</th>
                                 <th>Last DN<br>TO Time</th>
                             </tr>
                         </thead>
-                        <tbody id="table6Body" class="divide-y divide-black dark:divide-white"></tbody>
+                        <tbody id="table6Body" class="divide-y divide-black dark:divide-slate-800 data-mono"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-white shadow-md overflow-hidden lg:col-span-8">
-                <div class="bg-slate-900 dark:bg-slate-800 px-4 py-3 border-b-2 border-black dark:border-white flex justify-between items-center">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-slate-800 shadow-md overflow-hidden lg:col-span-8">
+                <div class="bg-slate-900 dark:bg-slate-800 px-4 py-3 border-b-2 border-black dark:border-slate-700 flex justify-between items-center">
                     <h2 class="text-base font-black text-white tracking-wide uppercase">Headquarters Crew Availability Structure</h2>
                 </div>
                 <div class="overflow-x-auto custom-scrollbar">
                     <table id="excel_T4" class="w-full border-collapse">
                         <thead>
                             <tr>
-                                <th class="w-24 sticky left-0 bg-slate-200 dark:bg-slate-700 shadow-md z-10">Lobby</th>
+                                <th class="w-24 sticky left-0 bg-slate-200 dark:bg-slate-800 shadow-md z-10">Lobby</th>
                                 <th>LP On Board (PR)</th>
                                 <th>LP PR Given</th>
-                                <th class="bg-amber-100 dark:bg-amber-950 font-extrabold">LP On Board (No PR)</th>
-                                <th class="bg-emerald-100 dark:bg-emerald-950 font-black">LP Anytime Avail</th>
+                                <th class="bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-400 font-extrabold">LP On Board (No PR)</th>
+                                <th class="bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-400 font-black">LP Anytime Avail</th>
                                 <th>ALP On Board (PR)</th>
                                 <th>ALP PR Given</th>
-                                <th class="bg-amber-100 dark:bg-amber-950 font-extrabold">ALP On Board (No PR)</th>
-                                <th class="bg-emerald-100 dark:bg-emerald-950 font-black">ALP Anytime Avail</th>
+                                <th class="bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-400 font-extrabold">ALP On Board (No PR)</th>
+                                <th class="bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-400 font-black">ALP Anytime Avail</th>
                             </tr>
                         </thead>
-                        <tbody id="table4Body" class="divide-y divide-black dark:divide-white"></tbody>
+                        <tbody id="table4Body" class="divide-y divide-black dark:divide-slate-800 data-mono"></tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-white shadow-md overflow-hidden lg:col-span-4">
-                <div class="bg-slate-900 dark:bg-slate-800 px-4 py-3 border-b-2 border-black dark:border-white flex justify-between items-center">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-slate-800 shadow-md overflow-hidden lg:col-span-4">
+                <div class="bg-slate-900 dark:bg-slate-800 px-4 py-3 border-b-2 border-black dark:border-slate-700 flex justify-between items-center">
                     <h2 class="text-base font-black text-white tracking-wide uppercase">Off Leave Pipeline</h2>
                 </div>
                 <div class="overflow-x-auto custom-scrollbar">
                     <table id="excel_T5" class="w-full border-collapse">
                         <thead>
                             <tr>
-                                <th class="w-20 sticky left-0 bg-slate-200 dark:bg-slate-700 shadow-md z-10">Lobby</th>
+                                <th class="w-20 sticky left-0 bg-slate-200 dark:bg-slate-800 shadow-md z-10">Lobby</th>
                                 <th>LP 02:00 Hr</th>
                                 <th>LP 06:00 Hr</th>
                                 <th>ALP 02:00 Hr</th>
                                 <th>ALP 06:00 Hr</th>
                             </tr>
                         </thead>
-                        <tbody id="table5Body" class="divide-y divide-black dark:divide-white"></tbody>
+                        <tbody id="table5Body" class="divide-y divide-black dark:divide-slate-800 data-mono"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 gap-6">
-            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-white shadow-md overflow-hidden">
-                <div class="bg-slate-800 px-4 py-2.5 border-b-2 border-black dark:border-white flex justify-between items-center">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-slate-800 shadow-md overflow-hidden">
+                <div class="bg-slate-800 px-4 py-2.5 border-b-2 border-black dark:border-slate-700 flex justify-between items-center">
                     <h2 class="text-sm font-black text-white tracking-wide uppercase">Outstation Crew Train Orders Matrix</h2>
                 </div>
                 <div class="overflow-x-auto custom-scrollbar">
                     <table id="excel_T1" class="w-full border-collapse">
                         <thead id="table1Head"></thead>
-                        <tbody id="table1Body" class="divide-y divide-black dark:divide-white"></tbody>
+                        <tbody id="table1Body" class="divide-y divide-black dark:divide-slate-800 data-mono"></tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-white shadow-md overflow-hidden">
-                <div class="bg-slate-800 px-4 py-2.5 border-b-2 border-black dark:border-white flex justify-between items-center">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-slate-800 shadow-md overflow-hidden">
+                <div class="bg-slate-800 px-4 py-2.5 border-b-2 border-black dark:border-slate-700 flex justify-between items-center">
                     <h2 class="text-sm font-black text-white tracking-wide uppercase">Outstation Crew Set Availability Matrix</h2>
                 </div>
                 <div class="overflow-x-auto custom-scrollbar">
                     <table id="excel_T2" class="w-full border-collapse">
                         <thead id="table2Head"></thead>
-                        <tbody id="table2Body" class="divide-y divide-black dark:divide-white"></tbody>
+                        <tbody id="table2Body" class="divide-y divide-black dark:divide-slate-800 data-mono"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 gap-6">
-            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-white shadow-md overflow-hidden">
-                <div class="bg-amber-400 dark:bg-amber-500 px-4 py-2.5 border-b-2 border-black dark:border-white text-center">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border-2 border-black dark:border-slate-800 shadow-md overflow-hidden">
+                <div class="bg-amber-400 dark:bg-amber-500 px-4 py-2.5 border-b-2 border-black dark:border-slate-700 text-center">
                     <h2 class="text-base font-black text-black tracking-wide uppercase">Crack Run Particulars</h2>
                 </div>
                 <div class="overflow-x-auto custom-scrollbar">
                     <table id="excel_T7" class="w-full border-collapse">
                         <thead>
                             <tr class="bg-slate-100 dark:bg-slate-800">
-                                <th class="w-96 text-left pl-4 sticky left-0 bg-slate-200 dark:bg-slate-700 z-10 font-black">LOBBY/CRACK RUN & LR DETAILS</th>
+                                <th class="w-96 text-left pl-4 sticky left-0 bg-slate-200 dark:bg-slate-800 z-10 font-black">LOBBY/CRACK RUN & LR DETAILS</th>
                                 <th class="font-black">BJRI</th>
                                 <th class="font-black">BRJN</th>
                                 <th class="font-black">BSP</th>
@@ -375,10 +385,10 @@
                                 <th class="font-black">RIG</th>
                                 <th class="font-black">SDL</th>
                                 <th class="font-black">USL</th>
-                                <th class="font-black bg-slate-300 dark:bg-slate-600">TOTAL</th>
+                                <th class="font-black bg-slate-300 dark:bg-slate-700">TOTAL</th>
                             </tr>
                         </thead>
-                        <tbody id="table7Body" class="divide-y divide-black dark:divide-white"></tbody>
+                        <tbody id="table7Body" class="divide-y divide-black dark:divide-slate-800 data-mono"></tbody>
                     </table>
                 </div>
             </div>
@@ -402,7 +412,7 @@
             { label: "Total Number of DGG Incoming Crew", key: "dgg_incoming" },
             { label: "Total Number of DGG Outgoing Crew", key: "dgg_outgoing" },
             { label: "Total Number of LP VYAS LR available on Board", key: "lp_vyas_lr" },
-            { label: "Total Number of ALP VYAS LR available on Board", key: "alp_vyas_lr" },
+            { label: "Total Number of ALP VYAS LR available on Board", key: "alp_bsp_lr" },
             { label: "Total Number of DBEC Incoming Crew", key: "dbec_incoming" },
             { label: "Total Number of DBEC Outgoing Crew", key: "dbec_outgoing" },
             { label: "Total Number of SGO Incoming Crew", key: "sgo_incoming" },
@@ -416,24 +426,11 @@
         ];
 
         const blockMapT7 = [
-            [0, 1, 1, 1, 1, 1, 1], 
-            [0, 1, 1, 1, 1, 1, 1], 
-            [1, 0, 1, 1, 1, 1, 1], 
-            [1, 0, 1, 1, 1, 1, 1], 
-            [1, 1, 0, 1, 1, 1, 1], 
-            [1, 1, 0, 1, 1, 1, 1], 
-            [1, 1, 0, 1, 1, 1, 1], 
-            [1, 1, 0, 1, 1, 1, 1], 
-            [1, 1, 1, 0, 0, 1, 1], 
-            [1, 1, 1, 0, 0, 1, 1], 
-            [1, 1, 1, 1, 1, 0, 1], 
-            [1, 1, 1, 1, 1, 0, 1], 
-            [1, 1, 1, 1, 1, 0, 1], 
-            [1, 1, 1, 1, 1, 0, 1], 
-            [1, 1, 1, 1, 1, 1, 0], 
-            [1, 1, 1, 1, 1, 1, 0], 
-            [1, 1, 1, 1, 1, 1, 0], 
-            [1, 1, 1, 1, 1, 1, 0]  
+            [0, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1], [1, 0, 1, 1, 1, 1, 1], [1, 0, 1, 1, 1, 1, 1],
+            [1, 1, 0, 1, 1, 1, 1], [1, 1, 0, 1, 1, 1, 1], [1, 1, 0, 1, 1, 1, 1], [1, 1, 0, 1, 1, 1, 1],
+            [1, 1, 1, 0, 0, 1, 1], [1, 1, 1, 0, 0, 1, 1], [1, 1, 1, 1, 1, 0, 1], [1, 1, 1, 1, 1, 0, 1],
+            [1, 1, 1, 1, 1, 0, 1], [1, 1, 1, 1, 1, 0, 1], [1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 0],
+            [1, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 0]  
         ];
 
         const colsT1 = ['os_crew_to', ...SUB_STATIONS.map((_, i) => `sub_${i+1}`)];
@@ -469,22 +466,25 @@
             const isDark = document.documentElement.classList.toggle('dark');
             const icon = document.getElementById('themeIcon');
             if (isDark) {
-                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.343l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path>`;
+                icon.className = "fa-solid fa-moon text-amber-400 text-sm";
                 updateChartThemes(true);
             } else {
-                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>`;
+                icon.className = "fa-solid fa-sun text-slate-900 text-sm";
                 updateChartThemes(false);
             }
         }
 
         function updateChartThemes(isDark) {
-            const color = isDark ? '#ffffff' : '#000000';
+            const color = isDark ? '#94a3b8' : '#475569';
+            const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+            
             [trafficChartInstance, crewChartInstance].forEach(chart => {
                 if(chart) {
                     chart.options.plugins.legend.labels.color = color;
                     if(chart.options.scales && chart.options.scales.y) {
                         chart.options.scales.y.ticks.color = color;
                         chart.options.scales.x.ticks.color = color;
+                        chart.options.scales.y.grid.color = gridColor;
                     }
                     chart.update();
                 }
@@ -512,16 +512,16 @@
         };
 
         function renderHeaderTemplates() {
-            let subHeadersHtml = `<tr><th class="sticky left-0 bg-slate-300 dark:bg-slate-700 z-10 w-24">LOBBY</th><th>TOTAL O/S BASE</th>`;
+            let subHeadersHtml = `<tr><th class="sticky left-0 bg-slate-300 dark:bg-slate-800 z-10 w-24">LOBBY</th><th>TOTAL O/S BASE</th>`;
             SUB_STATIONS.forEach(station => {
-                subHeadersHtml += `<th>OS TO <br><span class="text-blue-800 dark:text-blue-400">${station}</span></th>`;
+                subHeadersHtml += `<th>OS TO <br><span class="text-blue-600 dark:text-blue-400">${station}</span></th>`;
             });
             subHeadersHtml += `</tr>`;
             document.getElementById('table1Head').innerHTML = subHeadersHtml;
 
-            let t2HeadersHtml = `<tr><th class="sticky left-0 bg-slate-300 dark:bg-slate-700 z-10 w-24">LOBBY</th><th>TOTAL SETS AVAIL</th>`;
+            let t2HeadersHtml = `<tr><th class="sticky left-0 bg-slate-300 dark:bg-slate-800 z-10 w-24">LOBBY</th><th>TOTAL SETS AVAIL</th>`;
             SUB_STATIONS.forEach(station => {
-                t2HeadersHtml += `<th>OS SET <br><span class="text-indigo-800 dark:text-indigo-400">${station}</span></th>`;
+                t2HeadersHtml += `<th>OS SET <br><span class="text-indigo-600 dark:text-indigo-400">${station}</span></th>`;
             });
             t2HeadersHtml += `</tr>`;
             document.getElementById('table2Head').innerHTML = t2HeadersHtml;
@@ -529,8 +529,7 @@
 
         function renderBlankLayout() {
             ['table1Body', 'table2Body', 'table3Body', 'table4Body', 'table5Body', 'table6Body', 'table7Body'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.innerHTML = '';
+                const el = document.getElementById(id); if(el) el.innerHTML = '';
             });
 
             LOBBIES.forEach(lobby => {
@@ -543,10 +542,9 @@
             });
 
             CRACK_ROWS.forEach((rowObj, rIdx) => {
-                let rowHtml = `<tr><td class="font-bold text-left pl-4 sticky left-0 bg-slate-100 dark:bg-slate-800 border-r-2 border-black dark:border-white z-10">${rowObj.label}</td>`;
+                let rowHtml = `<tr><td class="font-bold text-left pl-4 sticky left-0 bg-slate-100 dark:bg-slate-800 border-r-2 border-black dark:border-slate-700 z-10">${rowObj.label}</td>`;
                 CRACK_LOBBIES.forEach((lobby, cIdx) => {
-                    const isBlocked = blockMapT7[rIdx][cIdx];
-                    if (isBlocked === 1) {
+                    if (blockMapT7[rIdx][cIdx] === 1) {
                         rowHtml += `<td class="blocked-cell"></td>`;
                     } else {
                         rowHtml += `<td id="T7_${lobby}_${rowObj.key}" class="font-bold">-</td>`;
@@ -564,12 +562,12 @@
         }
 
         function generateRowHtml(lobby, blockArray, cols, tableRef) {
-            let row = `<tr><td class="font-extrabold bg-slate-200 dark:bg-slate-800 text-left pl-3 border-r-2 border-black dark:border-white sticky left-0 z-10">${lobby}</td>`;
+            let row = `<tr><td class="font-extrabold bg-slate-200 dark:bg-slate-800 text-left pl-3 border-r-2 border-black dark:border-slate-700 sticky left-0 z-10">${lobby}</td>`;
             blockArray.forEach((isBlocked, index) => {
                 if (isBlocked === 1) {
                     row += `<td class="blocked-cell"></td>`;
                 } else {
-                    row += `<td id="${tableRef}_${lobby}_${cols[index]}" class="font-bold">-</td>`;
+                    row += `<td id="${tableRef}_${lobby}_${cols[index]}" class="font-bold text-slate-800 dark:text-slate-200">-</td>`;
                 }
             });
             row += `</tr>`;
@@ -577,7 +575,7 @@
         }
 
         function generateTotalRowHtml(cols, tableRef) {
-            let row = `<tr class="bg-slate-300 dark:bg-slate-700 border-t-2 border-black dark:border-white"><td class="font-black bg-slate-400 dark:bg-slate-600 text-left pl-3 sticky left-0 z-10">TOTAL</td>`;
+            let row = `<tr class="bg-slate-300 dark:bg-slate-800 border-t-2 border-black dark:border-slate-700"><td class="font-black bg-slate-400 dark:bg-slate-700 text-left pl-3 sticky left-0 z-10">TOTAL</td>`;
             cols.forEach((col) => {
                 row += `<td id="${tableRef}_TOTAL_${col}" class="font-black bg-slate-300 dark:bg-slate-700">-</td>`;
             });
@@ -587,13 +585,14 @@
 
         function initChartsPlaceholder() {
             const ctx1 = document.getElementById('trafficVolumeChart').getContext('2d');
+            const isDark = document.documentElement.classList.contains('dark');
             trafficChartInstance = new Chart(ctx1, {
                 type: 'bar',
                 data: { labels: LOBBIES, datasets: [
-                    { label: 'UP Train Orders', data: Array(LOBBIES.length).fill(0), backgroundColor: '#1d4ed8' },
+                    { label: 'UP Train Orders', data: Array(LOBBIES.length).fill(0), backgroundColor: '#2563eb' },
                     { label: 'DN Train Orders', data: Array(LOBBIES.length).fill(0), backgroundColor: '#3b82f6' }
                 ]},
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { labels: { color: '#000000' } } } }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' } } }, plugins: { legend: { labels: { color: isDark ? '#94a3b8' : '#475569' } } } }
             });
 
             const ctx2 = document.getElementById('crewDistributionChart').getContext('2d');
@@ -601,15 +600,30 @@
                 type: 'doughnut',
                 data: {
                     labels: ['LP (PR)', 'LP (No PR)', 'ALP (PR)', 'ALP (No PR)'],
-                    datasets: [{ data: [0, 0, 0, 0], backgroundColor: ['#1e40af', '#60a5fa', '#4338ca', '#818cf8'] }]
+                    datasets: [{ data: [0, 0, 0, 0], backgroundColor: ['#1e40af', '#60a5fa', '#4338ca', '#818cf8'], borderWidth: 0 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#000000' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: isDark ? '#94a3b8' : '#475569' } } } }
             });
         }
 
+        function normalizeDateString(dateStr) {
+            if (!dateStr) return "";
+            let cleanStr = dateStr.trim().replace(/\s+/g, '');
+            let parts = cleanStr.split(/[-/]/);
+            if (parts.length === 3) {
+                if (parts[0].length === 4) {
+                    return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+                }
+                if (parts[2].length === 4) {
+                    return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                }
+            }
+            return cleanStr;
+        }
+
         async function fetchMasterDashboardData() {
-            const targetTime = document.getElementById('positionTime').value; 
-            const targetDate = document.getElementById('fromDate').value;     
+            const targetTime = document.getElementById('positionTime').value.trim().toLowerCase().replace(/\s+/g, ''); 
+            const targetDate = normalizeDateString(document.getElementById('fromDate').value); 
             
             document.getElementById('loadingText').classList.remove('hidden');
             renderBlankLayout(); 
@@ -618,11 +632,13 @@
 
             for (const lobby of LOBBIES) {
                 try {
-                    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${lobby}!A1:BA100?key=${API_KEY}`;
+                    // CHANGED: Increased the cell fetch limit from A1:BA100 to A1:BA5000 to fetch dynamically added rows beyond 100
+                    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${lobby}!A1:BA5000?key=${API_KEY}`;
                     const response = await fetch(url);
                     const result = await response.json();
 
                     if (response.status !== 200 || !result.values || result.values.length <= 1) {
+                        console.warn(`API Error or empty sheet for lobby: ${lobby}`);
                         missingLobbies.push(lobby); continue;
                     }
 
@@ -631,18 +647,24 @@
 
                     for (let i = result.values.length - 1; i > 0; i--) {
                         const row = result.values[i];
-                        const rowDate = row[1] ? row[1].trim() : ""; 
-                        const rowTime = row[2] ? row[2].trim() : ""; 
+                        const rowDate = row[1] ? normalizeDateString(row[1]) : ""; 
+                        const rowTime = row[2] ? row[2].trim().toLowerCase().replace(/\s+/g, '') : ""; 
                         
-                        const isTimeMatch = rowTime.toLowerCase().replace(/\s+/g, '').includes(targetTime.replace(/\s+/g, '').toLowerCase());
+                        // Handled variations like '12:00hrs' matching seamlessly with '12:00'
+                        const isTimeMatch = rowTime.includes(targetTime);
                         const isDateMatch = (rowDate === targetDate);
 
                         if (isTimeMatch && isDateMatch) { targetRow = row; break; }
                     }
 
-                    if (targetRow) parseAndFillLobby(lobby, headers, targetRow);
-                    else missingLobbies.push(lobby);
+                    if (targetRow) {
+                        parseAndFillLobby(lobby, headers, targetRow);
+                    } else {
+                        console.info(`No matching rows found for date: ${targetDate} time: ${targetTime} in lobby: ${lobby}`);
+                        missingLobbies.push(lobby);
+                    }
                 } catch (err) {
+                    console.error(`Error processing data stream for lobby ${lobby}:`, err);
                     missingLobbies.push(lobby);
                 }
             }
@@ -657,7 +679,6 @@
             calculateTotals('T5', colsT5, blockMapT5);
             
             calculateTable7Totals();
-
             computeExecutiveKPIs();
             document.getElementById('loadingText').classList.add('hidden');
         }
@@ -667,16 +688,16 @@
             panel.classList.remove('hidden');
 
             if (missingArray.length > 0) {
-                panel.className = "p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-400 text-xs shadow-sm";
-                let badges = missingArray.map(lob => `<span class="inline-block bg-rose-700 text-white font-black px-2 py-0.5 rounded-md mx-1 animate-pulse border border-black">${lob}</span>`).join('');
-                panel.innerHTML = `<div class="flex items-center text-rose-900 dark:text-rose-200 font-bold">
+                panel.className = "p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs shadow-sm text-rose-600 dark:text-rose-400";
+                let badges = missingArray.map(lob => `<span class="inline-block bg-rose-600 text-white font-black px-2 py-0.5 rounded-md mx-1 border border-black">${lob}</span>`).join('');
+                panel.innerHTML = `<div class="flex items-center font-bold">
                     <span class="mr-2 text-sm">⚠️</span> 
-                    <span><strong>Sync Disruption:</strong> The following operational control sectors do not contain synced data logs:</span>
+                    <span><strong>Sync Disruption:</strong> Lobbies missing data feeds:</span>
                     <div class="ml-2 flex flex-wrap gap-1">${badges}</div>
                 </div>`;
             } else {
-                panel.className = "p-4 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 border-2 border-emerald-500 text-xs shadow-sm";
-                panel.innerHTML = `<div class="flex items-center text-emerald-950 dark:text-emerald-200 font-black">
+                panel.className = "p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs shadow-sm text-emerald-600 dark:text-emerald-400";
+                panel.innerHTML = `<div class="flex items-center font-black">
                     <span class="mr-2 text-sm">✅</span>
                     <span>All automated infrastructure feeds synchronized perfectly. Enterprise matrices verified.</span>
                 </div>`;
@@ -692,65 +713,64 @@
                 const val = parseInt(rawVal) || 0;
                 let cleanHeader = header.toUpperCase().replace(/\s+/g, ' ').trim();
 
-                if (cleanHeader.includes("TOTAL NUMBER OF UP TO")) updateCell(`T3_${lobby}_up_to`, val);
-                if (cleanHeader.includes("TOTAL NUMBER OF DN TO")) updateCell(`T3_${lobby}_dn_to`, val);
+                if (cleanHeader.includes("UP TO")) updateCell(`T3_${lobby}_up_to`, val);
+                if (cleanHeader.includes("DN TO")) updateCell(`T3_${lobby}_dn_to`, val);
                 if (cleanHeader.includes("HQ CREW TO")) updateCell(`T3_${lobby}_hq_crew_to`, val);
-                if (cleanHeader.includes("O/S CREW TO")) updateCell(`T3_${lobby}_os_crew_to_t3`, val);
-                if (cleanHeader.includes("TOTAL NUMBER OF SHUTTLING TO")) updateCell(`T3_${lobby}_shuttling_to`, val);
-                if (cleanHeader.includes("TOTAL NUMBER OF PILOT TO")) updateCell(`T3_${lobby}_pilot_to`, val);
-                if (cleanHeader.includes("TOTAL NUMBER OF BANKING ENGINE TO")) updateCell(`T3_${lobby}_banking_to`, val);
-                if (cleanHeader.includes("TOTAL NUMBER OF TKE")) updateCell(`T3_${lobby}_tke`, val);
-                
+                if (cleanHeader.includes("O/S CREW TO") || cleanHeader.includes("OS CREW TO")) updateCell(`T3_${lobby}_os_crew_to_t3`, val);
+                if (cleanHeader.includes("SHUTTLING TO")) updateCell(`T3_${lobby}_shuttling_to`, val);
+                if (cleanHeader.includes("PILOT TO")) updateCell(`T3_${lobby}_pilot_to`, val);
+                if (cleanHeader.includes("BANKING ENGINE TO") || cleanHeader.includes("BANKING TO")) updateCell(`T3_${lobby}_banking_to`, val);
+                if (cleanHeader.includes("TKE")) updateCell(`T3_${lobby}_tke`, val);
                 if (cleanHeader.includes("DOUBLE HEAD") || cleanHeader.includes("PUSH PULL")) updateCell(`T3_${lobby}_dh_pp`, val);
 
-                if (cleanHeader.includes("TOTAL NUMBER OF UP TO") || cleanHeader.includes("TOTAL NUMBER OF DN TO")) {
+                if (cleanHeader.includes("UP TO") || cleanHeader.includes("DN TO")) {
                     totalToSum += val; updateCell(`T3_${lobby}_total_to`, totalToSum);
                 }
 
-                if (cleanHeader.includes("O/S CREW TO")) updateCell(`T1_${lobby}_os_crew_to`, val);
+                if (cleanHeader.includes("O/S CREW TO") || cleanHeader.includes("OS CREW TO")) updateCell('T1_' + lobby + '_os_crew_to', val);
                 SUB_STATIONS.forEach((station, sIdx) => {
-                    if (cleanHeader === `OS TO ${station}`) updateCell(`T1_${lobby}_sub_${sIdx+1}`, val);
+                    if (cleanHeader.includes(`OS TO ${station}`) || cleanHeader === `OS TO ${station}`) updateCell(`T1_${lobby}_sub_${sIdx+1}`, val);
                 });
                 
-                if (cleanHeader.includes("O/S CREW SET AVAILABLE")) updateCell(`T2_${lobby}_os_crew_set`, val);
+                if (cleanHeader.includes("O/S CREW SET") || cleanHeader.includes("OS CREW SET")) updateCell(`T2_${lobby}_os_crew_set`, val);
                 SUB_STATIONS.forEach((station, sIdx) => {
-                    if (cleanHeader === `OS SET ${station}`) updateCell(`T2_${lobby}_sub_${sIdx+1}`, val);
+                    if (cleanHeader.includes(`OS SET ${station}`) || cleanHeader === `OS SET ${station}`) updateCell(`T2_${lobby}_sub_${sIdx+1}`, val);
                 });
 
-                if (cleanHeader.includes("TOTAL NUMBER OF LP AVAILABLE ON BOARD WITH PR")) updateCell(`T4_${lobby}_lp_board_pr`, val);
-                if (cleanHeader.includes("TOTAL NUMBER OF LP PR GIVEN")) updateCell(`T4_${lobby}_lp_pr_given`, val);
-                if (cleanHeader.includes("TOTAL NUMBER OF LP ANYTIME AVAILABLE")) updateCell(`T4_${lobby}_lp_anytime_avail`, val);
-                if (cleanHeader.includes("TOTAL NUMBER OF ALP AVAILABLE ON BOARD WITH PR")) updateCell(`T4_${lobby}_alp_board_pr`, val);
-                if (cleanHeader.includes("TOTAL NUMBER OF ALP PR GIVEN")) updateCell(`T4_${lobby}_alp_pr_given`, val);
-                if (cleanHeader.includes("TOTAL NUMBER OF ALP ANYTIME AVAILABLE")) updateCell(`T4_${lobby}_alp_anytime_avail`, val);
+                if (cleanHeader.includes("LP AVAILABLE") && cleanHeader.includes("WITH PR")) updateCell(`T4_${lobby}_lp_board_pr`, val);
+                if (cleanHeader.includes("LP PR GIVEN")) updateCell(`T4_${lobby}_lp_pr_given`, val);
+                if (cleanHeader.includes("LP ANYTIME AVAILABLE") || cleanHeader.includes("LP ANYTIME AVAIL")) updateCell(`T4_${lobby}_lp_anytime_avail`, val);
+                if (cleanHeader.includes("ALP AVAILABLE") && cleanHeader.includes("WITH PR")) updateCell(`T4_${lobby}_alp_board_pr`, val);
+                if (cleanHeader.includes("ALP PR GIVEN")) updateCell(`T4_${lobby}_alp_pr_given`, val);
+                if (cleanHeader.includes("ALP ANYTIME AVAILABLE") || cleanHeader.includes("ALP ANYTIME AVAIL")) updateCell(`T4_${lobby}_alp_anytime_avail`, val);
 
-                if (cleanHeader.includes("OFF LEAVE LP 02:00HRS")) updateCell(`T5_${lobby}_off_lp_02`, val);
-                if (cleanHeader.includes("OFF LEAVE LP 06:00HRS")) updateCell(`T5_${lobby}_off_lp_06`, val);
-                if (cleanHeader.includes("OFF LEAVE ALP 02:00HRS")) updateCell(`T5_${lobby}_off_alp_02`, val);
-                if (cleanHeader.includes("OFF LEAVE ALP 06:00HRS")) updateCell(`T5_${lobby}_off_alp_06`, val);
+                if (cleanHeader.includes("OFF LEAVE LP 02") || cleanHeader.includes("OFF LEAVE LP 02:00")) updateCell(`T5_${lobby}_off_lp_02`, val);
+                if (cleanHeader.includes("OFF LEAVE LP 06") || cleanHeader.includes("OFF LEAVE LP 06:00")) updateCell(`T5_${lobby}_off_lp_06`, val);
+                if (cleanHeader.includes("OFF LEAVE ALP 02") || cleanHeader.includes("OFF LEAVE ALP 02:00")) updateCell(`T5_${lobby}_off_alp_02`, val);
+                if (cleanHeader.includes("OFF LEAVE ALP 06") || cleanHeader.includes("OFF LEAVE ALP 06:00")) updateCell(`T5_${lobby}_off_alp_06`, val);
 
                 if (cleanHeader.includes("LAST UP TO TIME")) updateCell(`T6_${lobby}_last_up_time`, rawVal || "-");
                 if (cleanHeader.includes("LAST DN TO TIME")) updateCell(`T6_${lobby}_last_dn_time`, rawVal || "-");
 
                 if (CRACK_LOBBIES.includes(lobby)) {
-                    if (cleanHeader.includes("LP PND LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_pnd_lr`, val);
-                    if (cleanHeader.includes("ALP PND LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_pnd_lr`, val);
-                    if (cleanHeader.includes("LP BSP LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_bsp_lr`, val);
-                    if (cleanHeader.includes("ALP BSP LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_bsp_lr`, val);
-                    if (cleanHeader.includes("DGG INCOMING CREW")) updateCell(`T7_${lobby}_dgg_incoming`, val);
-                    if (cleanHeader.includes("DGG OUTGOING CREW")) updateCell(`T7_${lobby}_dgg_outgoing`, val);
-                    if (cleanHeader.includes("LP VYAS LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_vyas_lr`, val);
-                    if (cleanHeader.includes("ALP VYAS LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_vyas_lr`, val);
-                    if (cleanHeader.includes("DBEC INCOMING CREW")) updateCell(`T7_${lobby}_dbec_incoming`, val);
-                    if (cleanHeader.includes("DBEC OUTGOING CREW")) updateCell(`T7_${lobby}_dbec_outgoing`, val);
-                    if (cleanHeader.includes("SGO INCOMING CREW")) updateCell(`T7_${lobby}_sgo_incoming`, val);
-                    if (cleanHeader.includes("SGO OUTGOING CREW")) updateCell(`T7_${lobby}_sgo_outgoing`, val);
-                    if (cleanHeader.includes("LP S/BULLET LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_sbullet_lr`, val);
-                    if (cleanHeader.includes("ALP S/BULLET LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_sbullet_lr`, val);
-                    if (cleanHeader.includes("NKJ INCOMING CREW")) updateCell(`T7_${lobby}_nkj_incoming`, val);
-                    if (cleanHeader.includes("NKJ OUTGOING CREW")) updateCell(`T7_${lobby}_nkj_outgoing`, val);
-                    if (cleanHeader.includes("LP ARPA LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_lp_arpa_lr`, val);
-                    if (cleanHeader.includes("ALP ARPA LR AVAILABLE ON BOARD")) updateCell(`T7_${lobby}_alp_arpa_lr`, val);
+                    if (cleanHeader.includes("LP PND LR")) updateCell(`T7_${lobby}_lp_pnd_lr`, val);
+                    if (cleanHeader.includes("ALP PND LR")) updateCell(`T7_${lobby}_alp_pnd_lr`, val);
+                    if (cleanHeader.includes("LP BSP LR")) updateCell(`T7_${lobby}_lp_bsp_lr`, val);
+                    if (cleanHeader.includes("ALP BSP LR")) updateCell(`T7_${lobby}_alp_bsp_lr`, val);
+                    if (cleanHeader.includes("DGG INCOMING")) updateCell(`T7_${lobby}_dgg_incoming`, val);
+                    if (cleanHeader.includes("DGG OUTGOING")) updateCell(`T7_${lobby}_dgg_outgoing`, val);
+                    if (cleanHeader.includes("LP VYAS LR")) updateCell(`T7_${lobby}_lp_vyas_lr`, val);
+                    if (cleanHeader.includes("ALP VYAS LR")) updateCell(`T7_${lobby}_alp_bsp_lr`, val);
+                    if (cleanHeader.includes("DBEC INCOMING")) updateCell(`T7_${lobby}_dbec_incoming`, val);
+                    if (cleanHeader.includes("DBEC OUTGOING")) updateCell(`T7_${lobby}_dbec_outgoing`, val);
+                    if (cleanHeader.includes("SGO INCOMING")) updateCell(`T7_${lobby}_sgo_incoming`, val);
+                    if (cleanHeader.includes("SGO OUTGOING")) updateCell(`T7_${lobby}_sgo_outgoing`, val);
+                    if (cleanHeader.includes("LP S/BULLET LR")) updateCell(`T7_${lobby}_lp_sbullet_lr`, val);
+                    if (cleanHeader.includes("ALP S/BULLET LR")) updateCell(`T7_${lobby}_alp_sbullet_lr`, val);
+                    if (cleanHeader.includes("NKJ INCOMING")) updateCell(`T7_${lobby}_nkj_incoming`, val);
+                    if (cleanHeader.includes("NKJ OUTGOING")) updateCell(`T7_${lobby}_nkj_outgoing`, val);
+                    if (cleanHeader.includes("LP ARPA LR")) updateCell(`T7_${lobby}_lp_arpa_lr`, val);
+                    if (cleanHeader.includes("ALP ARPA LR")) updateCell(`T7_${lobby}_alp_arpa_lr`, val);
                 }
             });
         }
@@ -796,21 +816,17 @@
 
         function calculateTable7Totals() {
             CRACK_ROWS.forEach((rowObj, rIdx) => {
-                let rowSum = 0;
-                let holdsData = false;
+                let rowSum = 0; let holdsData = false;
                 CRACK_LOBBIES.forEach((lobby, cIdx) => {
                     if (blockMapT7[rIdx][cIdx] === 0) { 
                         const cell = document.getElementById(`T7_${lobby}_${rowObj.key}`);
                         if (cell && cell.innerText !== '-') {
-                            rowSum += parseInt(cell.innerText) || 0;
-                            holdsData = true;
+                            rowSum += parseInt(cell.innerText) || 0; holdsData = true;
                         }
                     }
                 });
                 const totalCell = document.getElementById(`T7_TOTAL_${rowObj.key}`);
-                if (totalCell) {
-                    totalCell.innerText = holdsData ? rowSum : '0';
-                }
+                if (totalCell) totalCell.innerText = holdsData ? rowSum : '0';
             });
         }
 
@@ -842,8 +858,7 @@
             document.getElementById('card_hq_to').innerText = hqCrewTo;
             document.getElementById('card_os_to').innerText = osCrewTo;
 
-            const upTrafficDataset = [];
-            const dnTrafficDataset = [];
+            const upTrafficDataset = []; const dnTrafficDataset = [];
             LOBBIES.forEach(lobby => {
                 upTrafficDataset.push(parseInt(document.getElementById(`T3_${lobby}_up_to`)?.innerText) || 0);
                 dnTrafficDataset.push(parseInt(document.getElementById(`T3_${lobby}_dn_to`)?.innerText) || 0);
@@ -860,7 +875,6 @@
         function exportDashboardToExcel() {
             const targetDate = document.getElementById('fromDate').value || new Date().toISOString().split('T')[0];
             const targetTime = document.getElementById('positionTime').value || "00:00";
-            
             const wb = XLSX.utils.book_new();
 
             const tablesConfig = [
